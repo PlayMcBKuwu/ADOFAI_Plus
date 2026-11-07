@@ -1,9 +1,9 @@
 {
   "EntryMethod": "BetterJudgmentLite.Main.Load",
   "Id": "BetterJudgmentLite",
-  "DisplayName": "Better Judgment Lite",
+  "DisplayName": "更好的判定 Lite (Better Judgment Lite)",
   "Author": "PlayMcBKuwu",
-  "Version": "1.2.0",
+  "Version": "1.3.0",
   "GameVersion": "r150",
   "Requirements": []
 }
