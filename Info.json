@@ -1,0 +1,9 @@
+{
+  "EntryMethod": "BetterJudgmentLite.Main.Load",
+  "Id": "BetterJudgmentLite",
+  "DisplayName": "Better Judgment Lite",
+  "Author": "PlayMcBKuwu",
+  "Version": "1.0.0",
+  "GameVersion": "r150",
+  "Requirements": []
+}

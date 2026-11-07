@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>ADOFAIPlus</AssemblyName>
+    <RootNamespace>ADOFAIPlus</RootNamespace>
+    <LangVersion>5</LangVersion>
+    <Optimize>true</Optimize>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\</OutputPath>
+    <DisableImplicitFrameworkReferences>false</DisableImplicitFrameworkReferences>
+    <NoWarn>CS0618</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="lib\*.dll">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Info.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
