@@ -7,7 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ADOFAIPlus
+namespace BetterJudgmentLite
 {
     public class IndicatorData
     {
@@ -576,59 +576,23 @@ namespace ADOFAIPlus
             }
         }
 
-        public static string GetHardcodedTimingText(bool isEarly, bool isDouble)
-        {
-            SystemLanguage lang = Loc.CurrentLanguage;
-            if (lang == SystemLanguage.Chinese || lang == SystemLanguage.ChineseSimplified || lang == SystemLanguage.ChineseTraditional)
-            {
-                if (isEarly) return isDouble ? "太快！！" : "太快！";
-                return isDouble ? "太慢！！" : "太慢！";
-            }
-            if (lang == SystemLanguage.Korean)
-            {
-                if (isEarly) return isDouble ? "빠름!!" : "빠름!";
-                return isDouble ? "느림!!" : "느림!";
-            }
-            if (lang == SystemLanguage.Japanese)
-            {
-                if (Main.Settings != null && Main.Settings.BetterJapaneseLocalization)
-                {
-                    if (isEarly) return isDouble ? "早すぎ！！" : "早すぎ！";
-                    return isDouble ? "遅すぎ！！" : "遅すぎ！";
-                }
-                if (isEarly) return isDouble ? "Too Early!!" : "Early!";
-                return isDouble ? "Late!!" : "Late!";
-            }
-            if (lang == SystemLanguage.English)
-            {
-                if (isEarly) return isDouble ? "Too Early!!" : "Early!";
-                return isDouble ? "Late!!" : "Late!";
-            }
-
-            string word = Loc.Get(isEarly ? "indicator.tooEarly" : "indicator.tooLate");
-            string excl = isDouble ? Loc.GetDoubleExcl() : Loc.GetSingleExcl();
-            return word + excl;
-        }
-
         public static string GetIndicatorDisplayText(bool isLenient, bool isEarly, bool isDouble, int rawMs)
         {
             HitMarginTextPreset preset = Persistence.hitMarginText;
             string suffix = isLenient ? "L" : "N";
 
-            // 1. 毫秒判定模式 (MsDifference / MsDifferenceColorSign)
             if (preset == HitMarginTextPreset.MsDifference || preset == HitMarginTextPreset.MsDifferenceColorSign)
             {
                 string sign = (rawMs < 0 || (rawMs == 0 && isEarly)) ? "-" : "+";
-                if (isDouble) sign = sign + sign; // -- 或 ++
+                if (isDouble) sign = sign + sign;
                 int absMs = Math.Abs(rawMs);
                 string excl = isDouble ? Loc.GetDoubleExcl() : string.Empty;
                 return string.Format("{0}{1}ms{2}{3}", sign, absMs, suffix, excl);
             }
 
-            // 2. 精简判定模式 (Shortened)
             if (preset == HitMarginTextPreset.Shortened)
             {
-                if (Main.Settings.EnableHitIndicatorPlus && Main.Settings.EnableAlternativeIndicatorPlus)
+                if (Main.Settings.EnableAlternativeIndicatorPlus)
                 {
                     if (Main.Settings.AltStyle == AlternativeIndicatorStyle.SignPrefix)
                     {
@@ -649,19 +613,12 @@ namespace ADOFAIPlus
                 return null;
             }
 
-            // 3. 默认文字模式 (Default / EarlyOrLate 等)
-            if (!Main.Settings.EnableHitIndicatorPlus)
-            {
-                return null;
-            }
-
             string exclText = isDouble ? Loc.GetDoubleExcl() : Loc.GetSingleExcl();
 
             if (Main.Settings.EnableAlternativeIndicatorPlus)
             {
                 if (Main.Settings.AltStyle == AlternativeIndicatorStyle.SignPrefix)
                 {
-                    // 另类指示器+（符号前缀）：-宽判！(太快) / +标判！(太慢) / --宽判！！ / ++标判！！
                     string sign = isEarly ? "-" : "+";
                     if (isDouble) sign = sign + sign;
                     string word = isLenient ? Loc.Get("indicator.lenient") : Loc.Get("indicator.normal");
@@ -669,15 +626,17 @@ namespace ADOFAIPlus
                 }
                 else
                 {
-                    // 另类指示器+（字符前缀）：完全硬编码对应语言词汇 (如 L-太快！/ N-太慢！/ L-Early! / N-Late!)
-                    string timingText = GetHardcodedTimingText(isEarly, isDouble);
-                    return suffix + "-" + timingText;
+                    return suffix + NativeHitTextToken;
                 }
             }
 
-            // 标准判定指示器+：纯正硬编码文字「宽判！」/「标判！」(双感叹号时: 宽判！！/ 标判！！)
-            string baseWord = isLenient ? Loc.Get("indicator.lenient") : Loc.Get("indicator.normal");
-            return baseWord + exclText;
+            if (Main.Settings.EnableHitIndicatorPlus)
+            {
+                string word = isLenient ? Loc.Get("indicator.lenient") : Loc.Get("indicator.normal");
+                return word + exclText;
+            }
+
+            return null;
         }
 
         [HarmonyPatch(typeof(scrMisc), "DetermineDifficultyUIMode")]
@@ -997,28 +956,54 @@ namespace ADOFAIPlus
                 if (CurrentIndicator == null || !__instance.gameObject.activeSelf)
                     return;
 
-                if (!string.IsNullOrEmpty(CurrentIndicator.DisplayText) && __instance.text != null)
+                if (__instance.text != null && __instance.text.font != null && __instance.text.fontSharedMaterial != null)
                 {
-                    __instance.text.text = CurrentIndicator.DisplayText;
+                    if (__instance.text.fontSharedMaterial.mainTexture != __instance.text.font.material.mainTexture)
+                    {
+                        __instance.text.fontSharedMaterial = __instance.text.font.material;
+                    }
+                }
+
+                if (CurrentIndicator.DisplayText != null && __instance.text != null)
+                {
+                    string display = CurrentIndicator.DisplayText;
+                    if (display.IndexOf(NativeHitTextToken) >= 0)
+                    {
+                        string nativeText = __instance.text.text;
+                        if (string.IsNullOrEmpty(nativeText))
+                        {
+                            nativeText = "Early!";
+                        }
+                        bool isCjkText = IsCjkStart(nativeText);
+                        string replacement = isCjkText ? nativeText : ("-" + nativeText);
+                        display = display.Replace(NativeHitTextToken, replacement);
+                    }
+                    __instance.text.text = display;
                 }
 
                 if (__instance.xPerfectBorder != null)
                 {
+                    if (__instance.xPerfectBorder.font != null && __instance.xPerfectBorder.fontSharedMaterial != null)
+                    {
+                        if (__instance.xPerfectBorder.fontSharedMaterial.mainTexture != __instance.xPerfectBorder.font.material.mainTexture)
+                        {
+                            if (RDConstants.data != null &&
+                                __instance.xPerfectBorder.font == RDConstants.data.chineseFontTMPro &&
+                                RDConstants.data.chineseFontTMProXPerfectBorderMaterial != null)
+                            {
+                                __instance.xPerfectBorder.fontMaterial = RDConstants.data.chineseFontTMProXPerfectBorderMaterial;
+                            }
+                            else
+                            {
+                                __instance.xPerfectBorder.fontSharedMaterial = __instance.xPerfectBorder.font.material;
+                            }
+                        }
+                    }
+
                     Color borderCol = CurrentIndicator.OutlineColor;
                     bool colorShaderBorder = (Main.Settings == null || Main.Settings.ColorHitTextBorder);
-
-                    // 确保 xPerfectBorder 使用与主文本一致的字体 asset 与 material，彻底避免 CJK 缺字漏显
-                    if (__instance.text != null && __instance.xPerfectBorder.font != __instance.text.font)
-                    {
-                        __instance.xPerfectBorder.font = __instance.text.font;
-                        __instance.xPerfectBorder.fontSharedMaterial = __instance.text.fontSharedMaterial;
-                    }
-
                     __instance.xPerfectBorder.gameObject.SetActive(true);
-                    if (__instance.text != null)
-                    {
-                        __instance.xPerfectBorder.text = __instance.text.text;
-                    }
+                    __instance.xPerfectBorder.text = __instance.text.text;
                     __instance.xPerfectBorder.color = borderCol;
 
                     if (colorShaderBorder)

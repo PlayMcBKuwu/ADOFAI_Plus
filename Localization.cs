@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ADOFAIPlus
+namespace BetterJudgmentLite
 {
     public static class Loc
     {
@@ -95,41 +95,41 @@ namespace ADOFAIPlus
 
             switch (key)
             {
-                // 浮动判定词 (Default) —— 与中文（稍快！/ 稍慢！/ 及格：早すぎ！/ 失误：早すぎ！！/ X完璧！/ 完璧！）风格一致：
+                // 浮动判定词 (Default) —— 与韩语（조금 빠름 / 조금 느림）、中文（稍快！ / 稍慢！）一致，采用自然形容词（少し早い！ / 少し遅い！）
                 case "HitMargin.TooEarly": result = "早すぎ！！"; return true;
-                case "HitMargin.VeryEarly": result = "早すぎ！"; return true;
-                case "HitMargin.EarlyPerfect": result = "早め！"; return true;
+                case "HitMargin.VeryEarly": result = "早い！"; return true;
+                case "HitMargin.EarlyPerfect": result = "少し早い！"; return true;
                 case "HitMargin.PerfectMinus": result = "-完璧！"; return true;
                 case "HitMargin.XPerfect": result = "X完璧！"; return true;
                 case "HitMargin.Perfect": result = "完璧！"; return true;
                 case "HitMargin.PerfectPlus": result = "+完璧！"; return true;
-                case "HitMargin.LatePerfect": result = "遅め！"; return true;
-                case "HitMargin.VeryLate": result = "遅すぎ！"; return true;
+                case "HitMargin.LatePerfect": result = "少し遅い！"; return true;
+                case "HitMargin.VeryLate": result = "遅い！"; return true;
                 case "HitMargin.TooLate": result = "遅すぎ！！"; return true;
                 case "HitMargin.Multipress": result = "同時押し！！"; return true;
-                case "HitMargin.OverPress": result = "早すぎ！！"; return true;
-                case "HitMargin.FailMiss": result = "ミス..."; return true;
-                case "HitMargin.FailOverload": result = "過負荷..."; return true;
+                case "HitMargin.OverPress": result = "押しすぎ！！"; return true;
+                case "HitMargin.FailMiss": result = "ミス！！"; return true;
+                case "HitMargin.FailOverload": result = "連打しすぎ！！"; return true;
                 case "HitMargin.Auto": result = "オート！"; return true;
 
                 // 倒计时 Ready / Go 本地化（保留原版日语的三种判定名称 優しい / 通常 / 厳しい 不做改动）
                 case "status.getReady": result = "準備！"; return true;
                 case "status.go": result = "スタート！"; return true;
 
-                // 详细结算统计词
+                // 详细结算统计词 —— 与韩语（조금 빠름 / 조금 느림）、中文（稍快 / 稍慢）一致
                 case "status.results.perfectM": result = "-完璧"; return true;
                 case "status.results.xPerfect": result = "X完璧"; return true;
                 case "status.results.perfectP": result = "+完璧"; return true;
-                case "status.results.ePerfect": result = "早め"; return true;
+                case "status.results.ePerfect": result = "少し早い"; return true;
                 case "status.results.perfect": result = "完璧"; return true;
-                case "status.results.lPerfect": result = "遅め"; return true;
+                case "status.results.lPerfect": result = "少し遅い"; return true;
                 case "status.results.tooEarly": result = "早すぎ"; return true;
-                case "status.results.early": result = "早すぎ"; return true;
-                case "status.results.late": result = "遅すぎ"; return true;
+                case "status.results.early": result = "早い"; return true;
+                case "status.results.late": result = "遅い"; return true;
                 case "status.results.missFails": result = "ミス"; return true;
-                case "status.results.overloadFails": result = "過負荷"; return true;
+                case "status.results.overloadFails": result = "連打ミス"; return true;
                 case "status.results.multipress": result = "同時押し"; return true;
-                case "status.results.overpress": result = "早すぎ"; return true;
+                case "status.results.overpress": result = "押しすぎ"; return true;
                 default:
                     return false;
             }
@@ -209,7 +209,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "拟人目标 X 精准度: {0:0.##}% (闭环控制在合法及格边界内注入生理节奏抖动，绝不死)");
             Add(l, "hud.autoplay_plus", "自动播放+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "更好的判定");
             Add(l, "stamp.mobile", "移动判定通关");
             Add(l, "stamp.custom", "自定判定通关");
             Add(l, "ui.custom.unit_label", "自定义判定模式 (Unit Mode):");
@@ -328,7 +328,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "擬人目標 X 精準度: {0:0.##}% (閉環控制在合法及格邊界內注入生理節奏抖動，絕不死)");
             Add(l, "hud.autoplay_plus", "自動播放+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "更好的判定");
             Add(l, "stamp.mobile", "移動判定通關");
             Add(l, "stamp.custom", "自定判定通關");
             Add(l, "ui.custom.unit_label", "自定義判定模式 (Unit Mode):");
@@ -447,7 +447,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "Human Target X-Accuracy: {0:0.##}% (Closed-loop humanized variance within safe Counted bounds)");
             Add(l, "hud.autoplay_plus", "Autoplay+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "Better Judgment");
             Add(l, "stamp.mobile", "Cleared with Mobile Judgment");
             Add(l, "stamp.custom", "Cleared with Custom Judgment");
             Add(l, "ui.custom.unit_label", "Custom Judgment Mode (Unit):");
@@ -558,7 +558,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "인간 목표 정확도: {0:0}% (현실적인 타이밍 편차 적용)");
             Add(l, "hud.autoplay_plus", "자동 재생+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "더 나은 판정");
             Add(l, "stamp.mobile", "모바일 판정 클리어");
             Add(l, "stamp.custom", "커스텀 판정 클리어");
             Add(l, "ui.custom.unit_label", "판정 단위 모드:");
@@ -669,7 +669,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "目標精度: {0:0}% (人間らしい反応ジッターを付与)");
             Add(l, "hud.autoplay_plus", "オートプレイ+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "より良い判定");
             Add(l, "stamp.mobile", "モバイル判定クリア");
             Add(l, "stamp.custom", "カスタム判定クリア");
             Add(l, "ui.custom.unit_label", "判定単位モード:");
@@ -780,7 +780,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "Precisión humana objetivo: {0:0}% (agrega variación de reacción)");
             Add(l, "hud.autoplay_plus", "Auto+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "Mejor Juicio");
             Add(l, "stamp.mobile", "Completado con Juicio Móvil");
             Add(l, "stamp.custom", "Completado con Juicio Personalizado");
             Add(l, "ui.custom.unit_label", "Modo de Unidad de Juicio:");
@@ -887,7 +887,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "Человеческая точность: {0:0}% (добавляет погрешность)");
             Add(l, "hud.autoplay_plus", "Авто+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "Улучшенное судейство");
             Add(l, "stamp.mobile", "Пройдено с мобильным судейством");
             Add(l, "stamp.custom", "Пройдено с кастомным судейством");
             Add(l, "ui.custom.unit_label", "Режим Единиц Судейства:");
@@ -994,7 +994,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "Menschliche Zielgenauigkeit: {0:0}% (Reaktionsjitter)");
             Add(l, "hud.autoplay_plus", "Autoplay+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "Bessere Beurteilung");
             Add(l, "stamp.mobile", "Mit Mobiler Beurteilung abgeschlossen");
             Add(l, "stamp.custom", "Mit benutzerdefinierter Beurteilung abgeschlossen");
             Add(l, "ui.custom.unit_label", "Beurteilungs-Einheitsmodus:");
@@ -1059,7 +1059,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "Précision humaine ciblée: {0:0}% (ajoute une variance de timing)");
             Add(l, "hud.autoplay_plus", "Autoplay+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "Meilleur Jugement");
             Add(l, "stamp.mobile", "Réussi avec Jugement Mobile");
             Add(l, "stamp.custom", "Réussi avec Jugement Personnalisé");
             Add(l, "ui.custom.unit_label", "Mode d'Unité de Jugement:");
@@ -1124,7 +1124,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "Precisão humana alvo: {0:0}% (adiciona variação de reação)");
             Add(l, "hud.autoplay_plus", "Autoplay+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "Melhor Julgamento");
             Add(l, "stamp.mobile", "Concluído com Julgamento Móvel");
             Add(l, "stamp.custom", "Concluído com Julgamento Personalizado");
             Add(l, "ui.custom.unit_label", "Modo de Unidade de Julgamento:");
@@ -1189,7 +1189,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "Docelowa ludzka dokładność: {0:0}% (wariancja reakcji)");
             Add(l, "hud.autoplay_plus", "Autoplay+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "Lepszy Sąd");
             Add(l, "stamp.mobile", "Ukończono w trybie mobilnym");
             Add(l, "stamp.custom", "Ukończono w trybie własnym");
             Add(l, "ui.custom.unit_label", "Tryb Jednostki Oceny:");
@@ -1254,7 +1254,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "Độ chính xác mô phỏng: {0:0}% (dao động thời gian thực tế)");
             Add(l, "hud.autoplay_plus", "Tự động+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "Phán Đoán Tốt Hơn");
             Add(l, "stamp.mobile", "Vượt qua với Phán đoán Di động");
             Add(l, "stamp.custom", "Vượt qua với Phán đoán Tùy chỉnh");
             Add(l, "ui.custom.unit_label", "Chế độ Đơn vị Phán đoán:");
@@ -1319,7 +1319,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "Cílová lidská přesnost: {0:0}% (variace odezvy)");
             Add(l, "hud.autoplay_plus", "Auto+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "Lepší Posouzení");
             Add(l, "stamp.mobile", "Dokončeno s mobilním posouzením");
             Add(l, "stamp.custom", "Dokončeno s vlastním posouzením");
             Add(l, "ui.custom.unit_label", "Režim Jednotky Posouzení:");
@@ -1384,7 +1384,7 @@ namespace ADOFAIPlus
             Add(l, "misc.autoplay_acc_label", "Precizie umană țintă: {0:0}% (variație de reacție)");
             Add(l, "hud.autoplay_plus", "Auto+");
             
-            Add(l, "mod.title", "ADOFAI+");
+            Add(l, "mod.title", "Judecată Mai Bună");
             Add(l, "stamp.mobile", "Finalizat cu Judecată Mobilă");
             Add(l, "stamp.custom", "Finalizat cu Judecată Personalizată");
             Add(l, "ui.custom.unit_label", "Mod Unitate de Judecată:");

@@ -1,0 +1,52 @@
+name: Build BetterJudgmentLite Mod
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build with dotnet / csc
+        shell: pwsh
+        run: |
+          dotnet build BetterJudgmentLite.csproj -c Release
+          if (!(Test-Path "bin/BetterJudgmentLite.dll")) {
+            ./build.ps1
+          }
+          New-Item -ItemType Directory -Path "release/BetterJudgmentLite" -Force | Out-Null
+          Copy-Item "bin/BetterJudgmentLite.dll" "release/BetterJudgmentLite/" -Force
+          Copy-Item "Info.json" "release/BetterJudgmentLite/" -Force
+          Compress-Archive -Path "release/BetterJudgmentLite" -DestinationPath "BetterJudgmentLite.zip" -Force
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BetterJudgmentLite
+          path: |
+            BetterJudgmentLite.zip
+            bin/BetterJudgmentLite.dll
+            Info.json
+
+      - name: Create GitHub Release (on Tag push)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: BetterJudgmentLite.zip
+          generate_release_notes: true

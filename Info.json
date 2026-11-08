@@ -2,8 +2,8 @@
   "EntryMethod": "BetterJudgmentLite.Main.Load",
   "Id": "BetterJudgmentLite",
   "DisplayName": "更好的判定 Lite (Better Judgment Lite)",
-  "Author": "PlayMcBKuwu",
-  "Version": "1.5.0",
+  "Author": "ADOFAI Research",
+  "Version": "1.5.2",
   "GameVersion": "r150",
   "Requirements": []
 }
