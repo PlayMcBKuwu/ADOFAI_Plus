@@ -633,8 +633,7 @@ namespace ADOFAIPlus
                     if (Main.Settings.AltStyle == AlternativeIndicatorStyle.SignPrefix)
                     {
                         string sign = isEarly ? "-" : "+";
-                        if (isDouble) sign = sign + sign;
-                        return sign + (isLenient ? "LEN" : "NOR");
+                        return (isLenient ? "LEN" : "NOR") + (isDouble ? "!!" : string.Empty) + sign;
                     }
                     else
                     {
@@ -661,11 +660,10 @@ namespace ADOFAIPlus
             {
                 if (Main.Settings.AltStyle == AlternativeIndicatorStyle.SignPrefix)
                 {
-                    // 另类指示器+（符号前缀）：-宽判！(太快) / +标判！(太慢) / --宽判！！ / ++标判！！
+                    // 另类指示器+（符号后缀）：标判！+ 和 宽判！！+ (太慢 +) / 标判！- 和 宽判！！- (太快 -)
                     string sign = isEarly ? "-" : "+";
-                    if (isDouble) sign = sign + sign;
                     string word = isLenient ? Loc.Get("indicator.lenient") : Loc.Get("indicator.normal");
-                    return sign + word + exclText;
+                    return word + exclText + sign;
                 }
                 else
                 {

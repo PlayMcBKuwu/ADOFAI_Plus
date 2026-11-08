@@ -277,7 +277,7 @@ namespace ADOFAIPlus
 
             Add(l, "ui.alt_indicator.toggle", "启用「另类判定指示器+」：为判定文字追加早晚击打指示（太快/太慢）");
             Add(l, "ui.alt_indicator.style_label", "另类指示器工作方式 (Alternative Indicator Style):");
-            Add(l, "ui.alt_style_sign", "正负符号前缀 (默认): -宽判！(太快) / +标判！(太慢)");
+            Add(l, "ui.alt_style_sign", "符号后缀 (默认): 标判！+ / 宽判！！+ (太慢 + / 太快 -)");
             Add(l, "ui.alt_style_letter", "字符名称前缀: L太快！/ N太慢！");
 
             Add(l, "ui.double_indicator.toggle", "为「太快！！」与「太慢！！」启用判定指示器：即使在空敲或失误断连情况下也进行重测，符合条件时显示「标判！！」与「宽判！！」");
@@ -396,7 +396,7 @@ namespace ADOFAIPlus
 
             Add(l, "ui.alt_indicator.toggle", "啟用「另類判定指示器+」：為判定文字追加早晚擊打指示（太快/太慢）");
             Add(l, "ui.alt_indicator.style_label", "另類指示器工作方式 (Alternative Indicator Style):");
-            Add(l, "ui.alt_style_sign", "正負符號前綴 (預設): -寬判！(太快) / +標判！(太慢)");
+            Add(l, "ui.alt_style_sign", "符號後綴 (預設): 標判！+ / 寬判！！+ (太慢 + / 太快 -)");
             Add(l, "ui.alt_style_letter", "字符名稱前綴: L太快！/ N太慢！");
 
             Add(l, "ui.double_indicator.toggle", "為「太快！！」與「太慢！！」啟用判定指示器：即使在空敲或失誤斷連情況下也進行重測，符合條件時顯示「標判！！」與「寬判！！」");
@@ -515,7 +515,7 @@ namespace ADOFAIPlus
 
             Add(l, "ui.alt_indicator.toggle", "Enable \"Alternative Indicator+\": Appends Early/Late direction to indicator text");
             Add(l, "ui.alt_indicator.style_label", "Alternative Indicator Style:");
-            Add(l, "ui.alt_style_sign", "Sign Prefix (Default): -Lenient! (Early) / +Normal! (Late)");
+            Add(l, "ui.alt_style_sign", "Sign Suffix (Default): Normal!+ / Lenient!!+ (Late + / Early -)");
             Add(l, "ui.alt_style_letter", "Letter Prefix: L-Early! / N-Late!");
 
             Add(l, "ui.double_indicator.toggle", "Enable for Double Hits (Misses/Overpress): Re-evaluates on misses; displays \"Normal!!\" & \"Lenient!!\" if eligible");
@@ -626,7 +626,7 @@ namespace ADOFAIPlus
 
             Add(l, "ui.alt_indicator.toggle", "「대체 인디케이터+」 활성화: 판정 텍스트에 빠름/느림 방향 표시 추가");
             Add(l, "ui.alt_indicator.style_label", "대체 인디케이터 작동 방식:");
-            Add(l, "ui.alt_style_sign", "부호 접두사 (기본값): -완화！(빠름) / +보통！(느림)");
+            Add(l, "ui.alt_style_sign", "기호 접미사 (기본값): 일반!+ / 너그러움!!+ (느림 + / 빠름 -)");
             Add(l, "ui.alt_style_letter", "문자 접두사: L빠름！ / N느림！");
 
             Add(l, "ui.double_indicator.toggle", "미스 및 연타 오류에 인디케이터 활성화: 탈락 시에도 재측정하여 「보통！！」, 「완화！！」 표시");
@@ -737,7 +737,7 @@ namespace ADOFAIPlus
 
             Add(l, "ui.alt_indicator.toggle", "「オルタナティブインジケーター+」を有効化: 判定文字に進み/遅れ方向を表示");
             Add(l, "ui.alt_indicator.style_label", "オルタナティブインジケーターの動作形式:");
-            Add(l, "ui.alt_style_sign", "符号プレフィックス (デフォルト): -優しい！(早すぎ) / +通常！(遅すぎ)");
+            Add(l, "ui.alt_style_sign", "記号サフィックス (デフォルト): 標準！+ / 緩和！！+ (遅め + / 早め -)");
             Add(l, "ui.alt_style_letter", "文字プレフィックス: L早すぎ！ / N遅すぎ！");
 
             Add(l, "ui.double_indicator.toggle", "ミス・空打ち判定インジケーター: ミス時にも再判定し「通常！！」「優しい！！」を表示");
@@ -844,7 +844,7 @@ namespace ADOFAIPlus
 
             Add(l, "ui.alt_indicator.toggle", "Activar \"Indicador Alternativo+\": Añade dirección rápido/lento");
             Add(l, "ui.alt_indicator.style_label", "Estilo de Indicador Alternativo:");
-            Add(l, "ui.alt_style_sign", "Prefijo de Signo (Por defecto): -Tolerante! (Rápido) / +Normal! (Lento)");
+            Add(l, "ui.alt_style_sign", "Sufijo de Signo (Por defecto): Normal!+ / Tolerante!!+ (Lento + / Rápido -)");
             Add(l, "ui.alt_style_letter", "Prefijo de Letra: L-Rápido! / N-Lento!");
 
             Add(l, "ui.double_indicator.toggle", "Activar para Dobles Golpes/Fallos: Muestra \"Normal!!\" y \"Tolerante!!\"");
@@ -951,7 +951,7 @@ namespace ADOFAIPlus
 
             Add(l, "ui.alt_indicator.toggle", "Включить «Альтернативный индикатор+»: направление рано/поздно");
             Add(l, "ui.alt_indicator.style_label", "Стиль альтернативного индикатора:");
-            Add(l, "ui.alt_style_sign", "Префикс знака (по умолч.): -Мягкий! (Рано) / +Норма! (Поздно)");
+            Add(l, "ui.alt_style_sign", "Суффикс знака (по умолч.): Норма!+ / Мягкий!!+ (Поздно + / Рано -)");
             Add(l, "ui.alt_style_letter", "Буквенный префикс: L-Рано! / N-Поздно!");
 
             Add(l, "ui.double_indicator.toggle", "Индикатор промахов: пересчитывает ошибки и показывает «Норма!!» / «Мягкий!!»");
@@ -1034,7 +1034,7 @@ namespace ADOFAIPlus
             Add(l, "ui.indicator.toggle", "\"Trefferindikator\" aktivieren: grauer Rand für Normal, grüner für Nachsichtig");
             Add(l, "ui.indicator_plus.toggle", "\"Trefferindikator+\" aktivieren: Text ersetzen durch Normal! / Nachsichtig!");
             Add(l, "ui.alt_indicator.toggle", "\"Alternativer Indikator+\" aktivieren: Früh/Spät-Richtung anzeigen");
-            Add(l, "ui.alt_style_sign", "Vorzeichen-Präfix (Standard): -Nachsichtig! (Früh) / +Normal! (Spät)");
+            Add(l, "ui.alt_style_sign", "Vorzeichen-Suffix (Standard): Normal!+ / Nachsichtig!!+ (Spät + / Früh -)");
             Add(l, "ui.alt_style_letter", "Buchstaben-Präfix: L-Früh! / N-Spät!");
             Add(l, "ui.double_indicator.toggle", "Indikator für Fehlschläge aktivieren (Normal!! / Nachsichtig!!)");
             Add(l, "ui.force_diff.toggle", "Schwierigkeitsauswahl immer erzwingen");
@@ -1099,7 +1099,7 @@ namespace ADOFAIPlus
             Add(l, "ui.indicator.toggle", "Activer \"Indicateur de Frappe\": bordure grise pour Normal, verte pour Tolérant");
             Add(l, "ui.indicator_plus.toggle", "Activer \"Indicateur de Frappe+\": remplace le texte par Normal! / Tolérant!");
             Add(l, "ui.alt_indicator.toggle", "Activer \"Indicateur Alternatif+\": ajoute la direction Tôt/Tard");
-            Add(l, "ui.alt_style_sign", "Préfixe de Signe (Défaut): -Tolérant! (Tôt) / +Normal! (Tard)");
+            Add(l, "ui.alt_style_sign", "Suffixe de Signe (Défaut): Normal!+ / Tolérant!!+ (Tard + / Tôt -)");
             Add(l, "ui.alt_style_letter", "Préfixe de Lettre: L-Tôt! / N-Tard!");
             Add(l, "ui.double_indicator.toggle", "Indicateur pour les échecs (Normal!! / Tolérant!!)");
             Add(l, "ui.force_diff.toggle", "Forcer le sélecteur de difficulté");
@@ -1164,7 +1164,7 @@ namespace ADOFAIPlus
             Add(l, "ui.indicator.toggle", "Ativar \"Indicador de Batida\": borda cinza para Normal, verde para Tolerante");
             Add(l, "ui.indicator_plus.toggle", "Ativar \"Indicador de Batida+\": texto Normal! / Tolerante!");
             Add(l, "ui.alt_indicator.toggle", "Ativar \"Indicador Alternativo+\": direção Cedo/Tarde");
-            Add(l, "ui.alt_style_sign", "Prefixo de Sinal (Padrão): -Tolerante! (Cedo) / +Normal! (Tarde)");
+            Add(l, "ui.alt_style_sign", "Sufixo de Sinal (Padrão): Normal!+ / Tolerante!!+ (Tarde + / Cedo -)");
             Add(l, "ui.alt_style_letter", "Prefixo de Letra: L-Cedo! / N-Tarde!");
             Add(l, "ui.double_indicator.toggle", "Indicador para erros/batidas duplas (Normal!! / Tolerante!!)");
             Add(l, "ui.force_diff.toggle", "Forçar seletor de dificuldade em qualquer nível");
@@ -1229,7 +1229,7 @@ namespace ADOFAIPlus
             Add(l, "ui.indicator.toggle", "Włącz \"Wskaźnik Oceny\": szara ramka dla Normalny, zielona dla Łagodny");
             Add(l, "ui.indicator_plus.toggle", "Włącz \"Wskaźnik Oceny+\": zamienia na Normalny! / Łagodny!");
             Add(l, "ui.alt_indicator.toggle", "Włącz \"Alternatywny Wskaźnik+\": kierunek Wcześnie/Późno");
-            Add(l, "ui.alt_style_sign", "Prefiks znaku (Domyślny): -Łagodny! (Wcześnie) / +Normalny! (Późno)");
+            Add(l, "ui.alt_style_sign", "Sufiks znaku (Domyślny): Normalny!+ / Łagodny!!+ (Późno + / Wcześnie -)");
             Add(l, "ui.alt_style_letter", "Prefiks litery: L-Wcześnie! / N-Późno!");
             Add(l, "ui.double_indicator.toggle", "Wskaźnik dla błędów (Normalny!! / Łagodny!!)");
             Add(l, "ui.force_diff.toggle", "Wymuś selektor trudności na każdym poziomie");
@@ -1294,7 +1294,7 @@ namespace ADOFAIPlus
             Add(l, "ui.indicator.toggle", "Bật \"Chỉ báo Phán đoán\": viền xám cho Tiêu chuẩn, xanh lá cho Nới lỏng");
             Add(l, "ui.indicator_plus.toggle", "Bật \"Chỉ báo Phán đoán+\": đổi chữ thành Tiêu chuẩn! / Nới lỏng!");
             Add(l, "ui.alt_indicator.toggle", "Bật \"Chỉ báo Thay thế+\": thêm hướng Sớm/Trễ");
-            Add(l, "ui.alt_style_sign", "Tiền tố Dấu (Mặc định): -Nới lỏng! (Sớm) / +Tiêu chuẩn! (Trễ)");
+            Add(l, "ui.alt_style_sign", "Hậu tố Dấu (Mặc định): Tiêu chuẩn!+ / Nới lỏng!!+ (Trễ + / Sớm -)");
             Add(l, "ui.alt_style_letter", "Tiền tố Chữ cái: L-Sớm! / N-Trễ!");
             Add(l, "ui.double_indicator.toggle", "Chỉ báo cho lỗi/gõ trượt (Tiêu chuẩn!! / Nới lỏng!!)");
             Add(l, "ui.force_diff.toggle", "Bắt buộc mở thanh chọn độ khó ở mọi màn");
@@ -1359,7 +1359,7 @@ namespace ADOFAIPlus
             Add(l, "ui.indicator.toggle", "Povolit \"Indikátor Zásahu\": šedý rámeček pro Normální, zelený pro Mírný");
             Add(l, "ui.indicator_plus.toggle", "Povolit \"Indikátor Zásahu+\": změní text na Normální! / Mírný!");
             Add(l, "ui.alt_indicator.toggle", "Povolit \"Alternativní Indikátor+\": směr Brzy/Pozdě");
-            Add(l, "ui.alt_style_sign", "Předpona Znaménka (Výchozí): -Mírný! (Brzy) / +Normální! (Pozdě)");
+            Add(l, "ui.alt_style_sign", "Přípona Znaménka (Výchozí): Normální!+ / Mírný!!+ (Pozdě + / Brzy -)");
             Add(l, "ui.alt_style_letter", "Předpona Písmene: L-Brzy! / N-Pozdě!");
             Add(l, "ui.double_indicator.toggle", "Indikátor pro chyby/dvojité stisknutí (Normální!! / Mírný!!)");
             Add(l, "ui.force_diff.toggle", "Vynutit volič obtížnosti na všech úrovních");
@@ -1424,7 +1424,7 @@ namespace ADOFAIPlus
             Add(l, "ui.indicator.toggle", "Activează \"Indicator de Lovire\": contur gri pentru Normal, verde pentru Indulgent");
             Add(l, "ui.indicator_plus.toggle", "Activează \"Indicator de Lovire+\": schimbă textul în Normal! / Indulgent!");
             Add(l, "ui.alt_indicator.toggle", "Activează \"Indicator Alternativ+\": direcție Devreme/Târziu");
-            Add(l, "ui.alt_style_sign", "Prefix de Semn (Implicit): -Indulgent! (Devreme) / +Normal! (Târziu)");
+            Add(l, "ui.alt_style_sign", "Sufix de Semn (Implicit): Normal!+ / Indulgent!!+ (Târziu + / Devreme -)");
             Add(l, "ui.alt_style_letter", "Prefix de Literă: L-Devreme! / N-Târziu!");
             Add(l, "ui.double_indicator.toggle", "Indicator pentru ratări (Normal!! / Indulgent!!)");
             Add(l, "ui.force_diff.toggle", "Forțează selectorul de dificultate pe orice nivel");
