@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>BetterJudgmentLite</AssemblyName>
-    <RootNamespace>BetterJudgmentLite</RootNamespace>
-    <LangVersion>latest</LangVersion>
+    <AssemblyName>ADOFAIPlus</AssemblyName>
+    <RootNamespace>ADOFAIPlus</RootNamespace>
+    <LangVersion>5</LangVersion>
     <Optimize>true</Optimize>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\</OutputPath>

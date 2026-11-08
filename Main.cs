@@ -4,7 +4,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityModManagerNet;
 
-namespace BetterJudgmentLite
+namespace ADOFAIPlus
 {
     public static class Main
     {

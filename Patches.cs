@@ -7,7 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace BetterJudgmentLite
+namespace ADOFAIPlus
 {
     public class IndicatorData
     {

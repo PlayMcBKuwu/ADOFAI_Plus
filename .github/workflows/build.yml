@@ -1,4 +1,4 @@
-name: Build BetterJudgmentLite Mod
+name: Build ADOFAI+ Mod
 
 on:
   push:
@@ -26,27 +26,27 @@ jobs:
       - name: Build with dotnet / csc
         shell: pwsh
         run: |
-          dotnet build BetterJudgmentLite.csproj -c Release
-          if (!(Test-Path "bin/BetterJudgmentLite.dll")) {
+          dotnet build ADOFAIPlus.csproj -c Release
+          if (!(Test-Path "bin/ADOFAIPlus.dll")) {
             ./build.ps1
           }
-          New-Item -ItemType Directory -Path "release/BetterJudgmentLite" -Force | Out-Null
-          Copy-Item "bin/BetterJudgmentLite.dll" "release/BetterJudgmentLite/" -Force
-          Copy-Item "Info.json" "release/BetterJudgmentLite/" -Force
-          Compress-Archive -Path "release/BetterJudgmentLite" -DestinationPath "BetterJudgmentLite.zip" -Force
+          New-Item -ItemType Directory -Path "release/ADOFAIPlus" -Force | Out-Null
+          Copy-Item "bin/ADOFAIPlus.dll" "release/ADOFAIPlus/" -Force
+          Copy-Item "Info.json" "release/ADOFAIPlus/" -Force
+          Compress-Archive -Path "release/ADOFAIPlus" -DestinationPath "ADOFAIPlus.zip" -Force
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BetterJudgmentLite
+          name: ADOFAIPlus
           path: |
-            BetterJudgmentLite.zip
-            bin/BetterJudgmentLite.dll
+            ADOFAIPlus.zip
+            bin/ADOFAIPlus.dll
             Info.json
 
       - name: Create GitHub Release (on Tag push)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: BetterJudgmentLite.zip
+          files: ADOFAIPlus.zip
           generate_release_notes: true

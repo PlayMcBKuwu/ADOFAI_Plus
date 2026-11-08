@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityModManagerNet;
 
-namespace BetterJudgmentLite
+namespace ADOFAIPlus
 {
     public enum AlternativeIndicatorStyle
     {
