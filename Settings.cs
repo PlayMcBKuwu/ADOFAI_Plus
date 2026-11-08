@@ -80,7 +80,7 @@ namespace ADOFAIPlus
         /// <summary>
         /// 另类判定指示器+：默认为启用，为指示器文字提供实际早晚方向指示（太快/太慢）
         /// </summary>
-        public bool EnableAlternativeIndicatorPlus = true;
+        public bool EnableAlternativeIndicatorPlus = false;
 
         /// <summary>
         /// 另类指示器工作方式（默认：正负符号前缀 -宽判！太快 / +标判！太慢）
