@@ -913,46 +913,27 @@ namespace ADOFAIPlus
                     rawMs = (int)Math.Round(timeDiffSec * 1000.0);
                 }
 
-                bool isNormalTier = false;
-                bool isLenientTier = false;
+                // 依次用游戏原生精确参数测算 Strict / Normal / Lenient
+                HitMargin strictRes = EvaluateDifficultyMargin(Difficulty.Strict, timeDiffSec, floorBpmVal, pitchVal, marginScale);
+                bool isStrictPass = HitMarginHelper.IsCounted(strictRes, HitMarginLimit.None);
 
-                if (isCounted)
+                // 核心守卫 2：只要严判成立（无论处于何种难度或练习模式倍速），均不触发标判/宽判指示器！
+                if (isStrictPass)
                 {
-                    if (GCS.difficulty == Difficulty.Normal)
-                    {
-                        // 在标准判定 (Normal) 下打出及格 (VeryEarly / VeryLate)，属于标判及格保命
-                        isNormalTier = true;
-                    }
-                    else if (GCS.difficulty == Difficulty.Lenient)
-                    {
-                        // 在宽松判定 (Lenient) 下打出及格：若落入标准判定区间则为标判保命，否则为宽判保命
-                        HitMargin normalRes = EvaluateDifficultyMargin(Difficulty.Normal, timeDiffSec, floorBpmVal, pitchVal, marginScale);
-                        if (HitMarginHelper.IsCounted(normalRes, HitMarginLimit.None))
-                        {
-                            isNormalTier = true;
-                        }
-                        else
-                        {
-                            isLenientTier = true;
-                        }
-                    }
+                    return;
                 }
-                else if (isDoubleFail)
+
+                HitMargin normalRes = EvaluateDifficultyMargin(Difficulty.Normal, timeDiffSec, floorBpmVal, pitchVal, marginScale);
+                HitMargin lenientRes = EvaluateDifficultyMargin(Difficulty.Lenient, timeDiffSec, floorBpmVal, pitchVal, marginScale);
+
+                bool isNormalTier = HitMarginHelper.IsCounted(normalRes, HitMarginLimit.None);
+                bool isLenientTier = !isNormalTier && HitMarginHelper.IsCounted(lenientRes, HitMarginLimit.None);
+
+                // 核心守卫 3：若当前处于「标准判定 (Normal)」且本次为及格命中 (isCounted)，它必然已通过标判，绝不可能降级为宽判
+                if (isCounted && GCS.difficulty == Difficulty.Normal)
                 {
-                    // 失误比对 (DoubleHitIndicator)：测试失误击打是否能落入标准判定或宽松判定窗口
-                    HitMargin normalRes = EvaluateDifficultyMargin(Difficulty.Normal, timeDiffSec, floorBpmVal, pitchVal, marginScale);
-                    if (HitMarginHelper.IsCounted(normalRes, HitMarginLimit.None))
-                    {
-                        isNormalTier = true;
-                    }
-                    else
-                    {
-                        HitMargin lenientRes = EvaluateDifficultyMargin(Difficulty.Lenient, timeDiffSec, floorBpmVal, pitchVal, marginScale);
-                        if (HitMarginHelper.IsCounted(lenientRes, HitMarginLimit.None))
-                        {
-                            isLenientTier = true;
-                        }
-                    }
+                    isNormalTier = true;
+                    isLenientTier = false;
                 }
 
                 if (!isNormalTier && !isLenientTier)
@@ -1019,27 +1000,54 @@ namespace ADOFAIPlus
                     Color borderCol = CurrentIndicator.OutlineColor;
                     bool colorShaderBorder = (Main.Settings == null || Main.Settings.ColorHitTextBorder);
 
+                    // 确保 xPerfectBorder 使用与主文本一致的字体 asset 与 material，彻底避免 CJK 缺字漏显
+                    if (__instance.text != null && __instance.xPerfectBorder.font != __instance.text.font)
+                    {
+                        __instance.xPerfectBorder.font = __instance.text.font;
+                        __instance.xPerfectBorder.fontSharedMaterial = __instance.text.fontSharedMaterial;
+                    }
+
+                    __instance.xPerfectBorder.gameObject.SetActive(true);
+                    if (__instance.text != null)
+                    {
+                        __instance.xPerfectBorder.text = __instance.text.text;
+                    }
+                    __instance.xPerfectBorder.color = borderCol;
+
                     if (colorShaderBorder)
                     {
-                        if (RDConstants.data != null && RDConstants.data.chineseFontTMProXPerfectBorderMaterial != null && Loc.IsCJK())
-                        {
-                            __instance.xPerfectBorder.fontSharedMaterial = RDConstants.data.chineseFontTMProXPerfectBorderMaterial;
-                        }
-                        __instance.xPerfectBorder.gameObject.SetActive(true);
-                        if (__instance.text != null)
-                        {
-                            __instance.xPerfectBorder.text = __instance.text.text;
-                        }
-                        __instance.xPerfectBorder.color = borderCol;
-
-                        __instance.xPerfectBorder.DOKill();
-                        __instance.xPerfectBorder.DOFade(0f, 0.7f / fadeSpeed)
-                            .SetDelay(0.5f / fadeSpeed)
-                            .SetEase(Ease.OutQuad);
+                        __instance.xPerfectBorder.faceColor = borderCol;
+                        __instance.xPerfectBorder.outlineColor = borderCol;
                     }
-                }
+                    else
+                    {
+                        __instance.xPerfectBorder.faceColor = Color.white;
+                        __instance.xPerfectBorder.outlineColor = Color.white;
+                    }
 
-                CurrentIndicator = null;
+                    try
+                    {
+                        Material borderMat = __instance.xPerfectBorder.fontMaterial;
+                        if (borderMat != null)
+                        {
+                            Color matCol = colorShaderBorder ? borderCol : Color.white;
+                            if (borderMat.HasProperty(ShaderUtilities.ID_OutlineColor))
+                                borderMat.SetColor(ShaderUtilities.ID_OutlineColor, matCol);
+                            if (borderMat.HasProperty(ShaderUtilities.ID_FaceColor))
+                                borderMat.SetColor(ShaderUtilities.ID_FaceColor, Color.white);
+                            if (borderMat.HasProperty(ShaderUtilities.ID_UnderlayColor))
+                                borderMat.SetColor(ShaderUtilities.ID_UnderlayColor, matCol);
+                            if (borderMat.HasProperty(ShaderUtilities.ID_GlowColor))
+                                borderMat.SetColor(ShaderUtilities.ID_GlowColor, matCol);
+                        }
+                    }
+                    catch {}
+
+                    __instance.xPerfectBorder.DOKill();
+                    __instance.xPerfectBorder.DOFade(0f, 0.7f / fadeSpeed)
+                        .SetDelay(0.5f / fadeSpeed)
+                        .SetEase(Ease.OutQuad);
+                }
             }
         }
 
