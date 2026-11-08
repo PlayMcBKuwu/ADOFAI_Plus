@@ -95,28 +95,29 @@ namespace ADOFAIPlus
 
             switch (key)
             {
-                // 浮动判定词 (Default) —— 与韩语（조금 빠름 / 조금 느림）、中文（稍快！ / 稍慢！）一致，采用自然形容词（少し早い！ / 少し遅い！）
+                // 浮动判定词 (Default) —— 与韩语（빠름 / 느림）、中文（稍快 / 稍慢 / X完美 / 完美）一致：
+                // 完美区间判定无感叹号；失误词汇对应中文原版：多次按键=同時押し!!，失误=ミス...，按太快/过载=過負荷...
                 case "HitMargin.TooEarly": result = "早すぎ！！"; return true;
                 case "HitMargin.VeryEarly": result = "早い！"; return true;
-                case "HitMargin.EarlyPerfect": result = "少し早い！"; return true;
-                case "HitMargin.PerfectMinus": result = "-完璧！"; return true;
-                case "HitMargin.XPerfect": result = "X完璧！"; return true;
-                case "HitMargin.Perfect": result = "完璧！"; return true;
-                case "HitMargin.PerfectPlus": result = "+完璧！"; return true;
-                case "HitMargin.LatePerfect": result = "少し遅い！"; return true;
+                case "HitMargin.EarlyPerfect": result = "少し早い"; return true;
+                case "HitMargin.PerfectMinus": result = "-完璧"; return true;
+                case "HitMargin.XPerfect": result = "X完璧"; return true;
+                case "HitMargin.Perfect": result = "完璧"; return true;
+                case "HitMargin.PerfectPlus": result = "+完璧"; return true;
+                case "HitMargin.LatePerfect": result = "少し遅い"; return true;
                 case "HitMargin.VeryLate": result = "遅い！"; return true;
                 case "HitMargin.TooLate": result = "遅すぎ！！"; return true;
                 case "HitMargin.Multipress": result = "同時押し！！"; return true;
-                case "HitMargin.OverPress": result = "押しすぎ！！"; return true;
-                case "HitMargin.FailMiss": result = "ミス！！"; return true;
-                case "HitMargin.FailOverload": result = "連打しすぎ！！"; return true;
+                case "HitMargin.OverPress": result = "早すぎ！！"; return true;
+                case "HitMargin.FailMiss": result = "ミス..."; return true;
+                case "HitMargin.FailOverload": result = "過負荷..."; return true;
                 case "HitMargin.Auto": result = "オート！"; return true;
 
                 // 倒计时 Ready / Go 本地化（保留原版日语的三种判定名称 優しい / 通常 / 厳しい 不做改动）
                 case "status.getReady": result = "準備！"; return true;
                 case "status.go": result = "スタート！"; return true;
 
-                // 详细结算统计词 —— 与韩语（조금 빠름 / 조금 느림）、中文（稍快 / 稍慢）一致
+                // 详细结算统计词
                 case "status.results.perfectM": result = "-完璧"; return true;
                 case "status.results.xPerfect": result = "X完璧"; return true;
                 case "status.results.perfectP": result = "+完璧"; return true;
@@ -127,9 +128,9 @@ namespace ADOFAIPlus
                 case "status.results.early": result = "早い"; return true;
                 case "status.results.late": result = "遅い"; return true;
                 case "status.results.missFails": result = "ミス"; return true;
-                case "status.results.overloadFails": result = "連打ミス"; return true;
+                case "status.results.overloadFails": result = "過負荷"; return true;
                 case "status.results.multipress": result = "同時押し"; return true;
-                case "status.results.overpress": result = "押しすぎ"; return true;
+                case "status.results.overpress": result = "早すぎ"; return true;
                 default:
                     return false;
             }
