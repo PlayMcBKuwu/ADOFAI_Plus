@@ -21,14 +21,14 @@ if (Test-Path $managed) {
     $allDlls = (Get-ChildItem -Path $libDir -Filter "*.dll" -File).FullName | Select-Object -Unique
 }
 
-$refArgs = $allDlls | ForEach-Object { "/r:`"$_`"" }
+$refArgs = $allDlls | ForEach-Object { "/r:$_" }
 
 $args = @(
     "/target:library",
-    "/out:`"$outputDll`"",
+    "/out:$outputDll",
     "/optimize+",
     "/nologo"
-) + $refArgs + ($sources | ForEach-Object { "`"$_`"" })
+) + $refArgs + $sources
 
 Write-Host "Compiling ADOFAIPlus.dll..." -ForegroundColor Cyan
 & $csc $args
@@ -55,5 +55,5 @@ if ($LASTEXITCODE -eq 0) {
     }
 } else {
     Write-Host "Build Failed!" -ForegroundColor Red
-    exit 1
+    exit $LASTEXITCODE
 }
