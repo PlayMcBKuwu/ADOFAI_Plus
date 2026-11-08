@@ -95,17 +95,16 @@ namespace ADOFAIPlus
 
             switch (key)
             {
-                // 浮动判定词 (Default) —— 与韩语（빠름 / 느림）、中文（稍快 / 稍慢 / X完美 / 完美）一致：
-                // 完美区间判定无感叹号；失误词汇对应中文原版：多次按键=同時押し!!，失误=ミス...，按太快/过载=過負荷...
+                // 浮动判定词 (Default) —— 与中文（稍快！/ 稍慢！/ 及格：早すぎ！/ 失误：早すぎ！！/ X完璧！/ 完璧！）风格一致：
                 case "HitMargin.TooEarly": result = "早すぎ！！"; return true;
-                case "HitMargin.VeryEarly": result = "早い！"; return true;
-                case "HitMargin.EarlyPerfect": result = "少し早い"; return true;
-                case "HitMargin.PerfectMinus": result = "-完璧"; return true;
-                case "HitMargin.XPerfect": result = "X完璧"; return true;
-                case "HitMargin.Perfect": result = "完璧"; return true;
-                case "HitMargin.PerfectPlus": result = "+完璧"; return true;
-                case "HitMargin.LatePerfect": result = "少し遅い"; return true;
-                case "HitMargin.VeryLate": result = "遅い！"; return true;
+                case "HitMargin.VeryEarly": result = "早すぎ！"; return true;
+                case "HitMargin.EarlyPerfect": result = "早め！"; return true;
+                case "HitMargin.PerfectMinus": result = "-完璧！"; return true;
+                case "HitMargin.XPerfect": result = "X完璧！"; return true;
+                case "HitMargin.Perfect": result = "完璧！"; return true;
+                case "HitMargin.PerfectPlus": result = "+完璧！"; return true;
+                case "HitMargin.LatePerfect": result = "遅め！"; return true;
+                case "HitMargin.VeryLate": result = "遅すぎ！"; return true;
                 case "HitMargin.TooLate": result = "遅すぎ！！"; return true;
                 case "HitMargin.Multipress": result = "同時押し！！"; return true;
                 case "HitMargin.OverPress": result = "早すぎ！！"; return true;
@@ -121,12 +120,12 @@ namespace ADOFAIPlus
                 case "status.results.perfectM": result = "-完璧"; return true;
                 case "status.results.xPerfect": result = "X完璧"; return true;
                 case "status.results.perfectP": result = "+完璧"; return true;
-                case "status.results.ePerfect": result = "少し早い"; return true;
+                case "status.results.ePerfect": result = "早め"; return true;
                 case "status.results.perfect": result = "完璧"; return true;
-                case "status.results.lPerfect": result = "少し遅い"; return true;
+                case "status.results.lPerfect": result = "遅め"; return true;
                 case "status.results.tooEarly": result = "早すぎ"; return true;
-                case "status.results.early": result = "早い"; return true;
-                case "status.results.late": result = "遅い"; return true;
+                case "status.results.early": result = "早すぎ"; return true;
+                case "status.results.late": result = "遅すぎ"; return true;
                 case "status.results.missFails": result = "ミス"; return true;
                 case "status.results.overloadFails": result = "過負荷"; return true;
                 case "status.results.multipress": result = "同時押し"; return true;
