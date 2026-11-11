@@ -632,8 +632,16 @@ namespace ADOFAIPlus
                 {
                     if (Main.Settings.AltStyle == AlternativeIndicatorStyle.SignPrefix)
                     {
-                        string sign = isEarly ? "-" : "+";
-                        return (isLenient ? "LEN" : "NOR") + (isDouble ? "!!" : string.Empty) + sign;
+                        string word = isLenient ? "LEN" : "NOR";
+                        string excl = isDouble ? "!!" : string.Empty;
+                        if (isEarly)
+                        {
+                            return "-" + word + excl;
+                        }
+                        else
+                        {
+                            return word + excl + "+";
+                        }
                     }
                     else
                     {
@@ -660,10 +668,16 @@ namespace ADOFAIPlus
             {
                 if (Main.Settings.AltStyle == AlternativeIndicatorStyle.SignPrefix)
                 {
-                    // 另类指示器+（符号后缀）：标判！+ 和 宽判！！+ (太慢 +) / 标判！- 和 宽判！！- (太快 -)
-                    string sign = isEarly ? "-" : "+";
+                    // 另类指示器+（早-在前 / 晚+在后）：-标判！/ -宽判！！ (太快)；标判！+ / 宽判！！+ (太慢)
                     string word = isLenient ? Loc.Get("indicator.lenient") : Loc.Get("indicator.normal");
-                    return word + exclText + sign;
+                    if (isEarly)
+                    {
+                        return "-" + word + exclText;
+                    }
+                    else
+                    {
+                        return word + exclText + "+";
+                    }
                 }
                 else
                 {

@@ -6,7 +6,7 @@ namespace ADOFAIPlus
 {
     public enum AlternativeIndicatorStyle
     {
-        SignPrefix = 0,   // 符号后缀: 标判！+ / 宽判！！+ (太慢 + / 太快 -) [默认]
+        SignPrefix = 0,   // 正负符号: -标判！(太快) / 标判！+(太慢) [默认]
         LetterPrefix = 1  // 字符名称前缀: L太快！/ N太慢！
     }
 
