@@ -5,6 +5,8 @@ using DG.Tweening;
 using HarmonyLib;
 using TMPro;
 using UnityEngine;
+using System.IO;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace ADOFAIPlus
@@ -558,6 +560,301 @@ namespace ADOFAIPlus
             catch (Exception ex)
             {
                 if (Main.Logger != null) Main.Logger.Error("ApplyJapaneseFontPreference failed: " + ex);
+            }
+        }
+
+        private static Font cachedClassicFont = null;
+        private static TMP_FontAsset cachedClassicFontTMP = null;
+        private static bool fontLoadAttempted = false;
+
+        public static bool IsLevelEditor()
+        {
+            try
+            {
+                if (ADOBase.isLevelEditor) return true;
+                if (ADOBase.isEditingLevel) return true;
+                if (ADOBase.editor != null) return true;
+                if (scnEditor.instance != null) return true;
+                if (!string.IsNullOrEmpty(ADOBase.sceneName) && ADOBase.sceneName.IndexOf("Editor", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return true;
+            }
+            catch {}
+            return false;
+        }
+
+        public static bool IsEditorObject(GameObject go)
+        {
+            if (go == null) return false;
+            if (IsLevelEditor()) return true;
+            try
+            {
+                Transform curr = go.transform;
+                while (curr != null)
+                {
+                    string name = curr.name;
+                    if (name != null && (name.IndexOf("editor", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                         name.IndexOf("scnEditor", StringComparison.OrdinalIgnoreCase) >= 0))
+                    {
+                        return true;
+                    }
+                    curr = curr.parent;
+                }
+            }
+            catch {}
+            return false;
+        }
+
+        private static string[] GetCandidateClassicFontPaths()
+        {
+            List<string> paths = new List<string>();
+
+            if (Main.ModEntry != null && !string.IsNullOrEmpty(Main.ModEntry.Path))
+            {
+                paths.Add(Path.Combine(Main.ModEntry.Path, "Fonts", "站酷快乐体 开源版.ttf"));
+                paths.Add(Path.Combine(Main.ModEntry.Path, "站酷快乐体 开源版.ttf"));
+            }
+
+            paths.Add(@"c:\Users\playm\Downloads\AyuGram Desktop\ADOFONTS\站酷快乐体 开源版.ttf");
+
+            try
+            {
+                string gameDir = Directory.GetCurrentDirectory();
+                if (!string.IsNullOrEmpty(gameDir))
+                {
+                    paths.Add(Path.Combine(gameDir, "Fonts", "站酷快乐体 开源版.ttf"));
+                    paths.Add(Path.Combine(gameDir, "Mods", "ADOFAIPlusPlus", "Fonts", "站酷快乐体 开源版.ttf"));
+                    paths.Add(Path.Combine(gameDir, "Mods", "ADOFAIPlus", "Fonts", "站酷快乐体 开源版.ttf"));
+                }
+            }
+            catch {}
+
+            return paths.ToArray();
+        }
+
+        public static Font GetOrCreateClassicFont()
+        {
+            if (cachedClassicFont != null) return cachedClassicFont;
+            if (fontLoadAttempted && cachedClassicFont == null) return null;
+
+            try
+            {
+                string[] candidates = GetCandidateClassicFontPaths();
+                string foundPath = null;
+                for (int i = 0; i < candidates.Length; i++)
+                {
+                    if (File.Exists(candidates[i]))
+                    {
+                        foundPath = candidates[i];
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(foundPath))
+                {
+                    if (Main.Logger != null) Main.Logger.Log("[ClassicFont] Font file not found in candidate paths.");
+                    fontLoadAttempted = true;
+                    return null;
+                }
+
+                cachedClassicFont = new Font(foundPath);
+                cachedClassicFont.name = "站酷快乐体 开源版";
+                UnityEngine.Object.DontDestroyOnLoad(cachedClassicFont);
+                if (Main.Logger != null) Main.Logger.Log("[ClassicFont] Successfully loaded Font from: " + foundPath);
+            }
+            catch (Exception ex)
+            {
+                if (Main.Logger != null) Main.Logger.Error("[ClassicFont] Failed to load Font: " + ex);
+            }
+            finally
+            {
+                fontLoadAttempted = true;
+            }
+            return cachedClassicFont;
+        }
+
+        public static TMP_FontAsset GetOrCreateClassicFontTMP()
+        {
+            if (cachedClassicFontTMP != null) return cachedClassicFontTMP;
+
+            Font baseFont = GetOrCreateClassicFont();
+            if (baseFont == null) return null;
+
+            try
+            {
+                cachedClassicFontTMP = TMP_FontAsset.CreateFontAsset(baseFont);
+                if (cachedClassicFontTMP != null)
+                {
+                    cachedClassicFontTMP.name = "站酷快乐体 开源版";
+                    UnityEngine.Object.DontDestroyOnLoad(cachedClassicFontTMP);
+
+                    if (cachedClassicFontTMP.fallbackFontAssetTable == null)
+                    {
+                        cachedClassicFontTMP.fallbackFontAssetTable = new List<TMP_FontAsset>();
+                    }
+                    if (RDConstants.data != null)
+                    {
+                        if (RDConstants.data.chineseFontTMPro != null && !cachedClassicFontTMP.fallbackFontAssetTable.Contains(RDConstants.data.chineseFontTMPro))
+                        {
+                            cachedClassicFontTMP.fallbackFontAssetTable.Add(RDConstants.data.chineseFontTMPro);
+                        }
+                        if (RDConstants.data.latinFontTMPro != null && !cachedClassicFontTMP.fallbackFontAssetTable.Contains(RDConstants.data.latinFontTMPro))
+                        {
+                            cachedClassicFontTMP.fallbackFontAssetTable.Add(RDConstants.data.latinFontTMPro);
+                        }
+                    }
+                    if (Main.Logger != null) Main.Logger.Log("[ClassicFont] Successfully created TMP_FontAsset for 站酷快乐体 开源版");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Main.Logger != null) Main.Logger.Error("[ClassicFont] Failed to create TMP_FontAsset: " + ex);
+            }
+            return cachedClassicFontTMP;
+        }
+
+        public static void ApplyClassicFontPreference()
+        {
+            try
+            {
+                if (RDConstants.data == null)
+                    return;
+                if (Loc.CurrentLanguage != SystemLanguage.ChineseSimplified && RDString.language != SystemLanguage.ChineseSimplified)
+                    return;
+
+                bool useClassic = Main.Enabled && Main.Settings != null && Main.Settings.ClassicMode && !IsLevelEditor();
+
+                Font targetFont = null;
+                TMP_FontAsset targetFontTMP = null;
+
+                if (useClassic)
+                {
+                    targetFont = GetOrCreateClassicFont();
+                    targetFontTMP = GetOrCreateClassicFontTMP();
+                }
+
+                if (targetFont == null)
+                {
+                    targetFont = RDConstants.data.chineseFont;
+                }
+                if (targetFontTMP == null)
+                {
+                    targetFontTMP = RDConstants.data.chineseFontTMPro;
+                }
+
+                FontData fd = RDString.GetFontDataForLanguage(SystemLanguage.ChineseSimplified);
+                if (useClassic && targetFont != null && targetFontTMP != null)
+                {
+                    fd.font = targetFont;
+                    fd.fontTMP = targetFontTMP;
+                }
+                if (RDStringFontDataField != null)
+                {
+                    RDStringFontDataField.SetValue(null, fd);
+                }
+
+                if (targetFont != null)
+                {
+                    Text[] texts = UnityEngine.Object.FindObjectsOfType<Text>(true);
+                    if (texts != null)
+                    {
+                        for (int i = 0; i < texts.Length; i++)
+                        {
+                            Text t = texts[i];
+                            if (t != null && !IsEditorObject(t.gameObject))
+                            {
+                                t.font = targetFont;
+                            }
+                        }
+                    }
+                }
+
+                if (targetFontTMP != null)
+                {
+                    TMP_Text[] tmpTexts = UnityEngine.Object.FindObjectsOfType<TMP_Text>(true);
+                    if (tmpTexts != null)
+                    {
+                        for (int i = 0; i < tmpTexts.Length; i++)
+                        {
+                            TMP_Text t = tmpTexts[i];
+                            if (t != null && !IsEditorObject(t.gameObject))
+                            {
+                                t.font = targetFontTMP;
+                                if (targetFontTMP.material != null)
+                                {
+                                    t.fontSharedMaterial = targetFontTMP.material;
+                                }
+                            }
+                        }
+                    }
+
+                    scrHitTextMesh[] hitMeshes = UnityEngine.Object.FindObjectsOfType<scrHitTextMesh>(true);
+                    if (hitMeshes != null)
+                    {
+                        for (int i = 0; i < hitMeshes.Length; i++)
+                        {
+                            scrHitTextMesh m = hitMeshes[i];
+                            if (m != null && !IsEditorObject(m.gameObject))
+                            {
+                                if (m.text != null)
+                                {
+                                    m.text.font = targetFontTMP;
+                                    if (targetFontTMP.material != null)
+                                    {
+                                        m.text.fontSharedMaterial = targetFontTMP.material;
+                                    }
+                                }
+                                if (m.xPerfectBorder != null)
+                                {
+                                    m.xPerfectBorder.font = targetFontTMP;
+                                    if (targetFontTMP.material != null)
+                                    {
+                                        m.xPerfectBorder.fontSharedMaterial = targetFontTMP.material;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Main.Logger != null) Main.Logger.Error("ApplyClassicFontPreference failed: " + ex);
+            }
+        }
+
+        public static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            try
+            {
+                if (Main.Enabled && Main.Settings != null)
+                {
+                    if (IsLevelEditor())
+                    {
+                        if (RDConstants.data != null)
+                        {
+                            FontData fd = RDString.GetFontDataForLanguage(RDString.language);
+                            if (RDStringFontDataField != null)
+                            {
+                                RDStringFontDataField.SetValue(null, fd);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (Loc.CurrentLanguage == SystemLanguage.ChineseSimplified || RDString.language == SystemLanguage.ChineseSimplified)
+                        {
+                            ApplyClassicFontPreference();
+                        }
+                        if (Loc.CurrentLanguage == SystemLanguage.Japanese || RDString.language == SystemLanguage.Japanese)
+                        {
+                            ApplyJapaneseFontPreference();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Main.Logger != null) Main.Logger.Error("OnSceneLoaded font apply error: " + ex);
             }
         }
 
@@ -1117,6 +1414,35 @@ namespace ADOFAIPlus
             }
         }
 
+        [HarmonyPatch(typeof(RDString), "fontData", MethodType.Getter)]
+        public static class Patch_RDString_fontData_Getter
+        {
+            public static void Postfix(ref FontData __result)
+            {
+                if (Main.Enabled &&
+                    Main.Settings != null &&
+                    Main.Settings.ClassicMode &&
+                    (Loc.CurrentLanguage == SystemLanguage.ChineseSimplified || RDString.language == SystemLanguage.ChineseSimplified))
+                {
+                    if (IsLevelEditor())
+                    {
+                        if (RDConstants.data != null)
+                        {
+                            if (RDConstants.data.chineseFont != null) __result.font = RDConstants.data.chineseFont;
+                            if (RDConstants.data.chineseFontTMPro != null) __result.fontTMP = RDConstants.data.chineseFontTMPro;
+                        }
+                    }
+                    else
+                    {
+                        Font cf = GetOrCreateClassicFont();
+                        TMP_FontAsset cft = GetOrCreateClassicFontTMP();
+                        if (cf != null) __result.font = cf;
+                        if (cft != null) __result.fontTMP = cft;
+                    }
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(RDString), "GetFontDataForLanguage")]
         public static class Patch_RDString_GetFontDataForLanguage
         {
@@ -1129,6 +1455,21 @@ namespace ADOFAIPlus
                     language == SystemLanguage.Japanese)
                 {
                     language = SystemLanguage.ChineseSimplified;
+                }
+            }
+
+            public static void Postfix(SystemLanguage language, ref FontData __result)
+            {
+                if (Main.Enabled &&
+                    Main.Settings != null &&
+                    Main.Settings.ClassicMode &&
+                    language == SystemLanguage.ChineseSimplified &&
+                    !IsLevelEditor())
+                {
+                    Font cf = GetOrCreateClassicFont();
+                    TMP_FontAsset cft = GetOrCreateClassicFontTMP();
+                    if (cf != null) __result.font = cf;
+                    if (cft != null) __result.fontTMP = cft;
                 }
             }
         }
@@ -1148,6 +1489,19 @@ namespace ADOFAIPlus
                     __result == RDConstants.data.japaneseFont)
                 {
                     __result = RDConstants.data.chineseFont;
+                }
+
+                if (Main.Enabled &&
+                    Main.Settings != null &&
+                    Main.Settings.ClassicMode &&
+                    (Loc.CurrentLanguage == SystemLanguage.ChineseSimplified || RDString.language == SystemLanguage.ChineseSimplified) &&
+                    !IsLevelEditor())
+                {
+                    Font cf = GetOrCreateClassicFont();
+                    if (cf != null && RDConstants.data != null && __result == RDConstants.data.chineseFont)
+                    {
+                        __result = cf;
+                    }
                 }
             }
         }
@@ -1173,6 +1527,110 @@ namespace ADOFAIPlus
                     {
                         __result = __result.Replace("<font=\"" + jpName + "\">", "<font=\"" + cnName + "\">");
                     }
+                }
+
+                if (Main.Enabled &&
+                    Main.Settings != null &&
+                    Main.Settings.ClassicMode &&
+                    (Loc.CurrentLanguage == SystemLanguage.ChineseSimplified || RDString.language == SystemLanguage.ChineseSimplified) &&
+                    !IsLevelEditor() &&
+                    !string.IsNullOrEmpty(__result) &&
+                    RDConstants.data != null &&
+                    RDConstants.data.chineseFont != null)
+                {
+                    Font cf = GetOrCreateClassicFont();
+                    if (cf != null)
+                    {
+                        string cnName = RDConstants.data.chineseFont.name;
+                        string cfName = cf.name;
+                        if (!string.IsNullOrEmpty(cnName) && !string.IsNullOrEmpty(cfName) && __result.IndexOf(cnName) >= 0)
+                        {
+                            __result = __result.Replace("<font=\"" + cnName + "\">", "<font=\"" + cfName + "\">");
+                        }
+                    }
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(RDString), "SetLocalizedFont", new Type[] { typeof(Text) })]
+        public static class Patch_RDString_SetLocalizedFont_Text
+        {
+            public static void Postfix(Text text)
+            {
+                if (!Main.Enabled || Main.Settings == null) return;
+                if (!Main.Settings.ClassicMode) return;
+                if (Loc.CurrentLanguage != SystemLanguage.ChineseSimplified && RDString.language != SystemLanguage.ChineseSimplified) return;
+
+                if (IsLevelEditor() || IsEditorObject(text != null ? text.gameObject : null))
+                {
+                    if (RDConstants.data != null && RDConstants.data.chineseFont != null && text != null)
+                    {
+                        text.font = RDConstants.data.chineseFont;
+                    }
+                    return;
+                }
+
+                Font cf = GetOrCreateClassicFont();
+                if (cf != null && text != null)
+                {
+                    text.font = cf;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(RDString), "SetLocalizedFont", new Type[] { typeof(TMP_Text) })]
+        public static class Patch_RDString_SetLocalizedFont_TMPText
+        {
+            public static void Postfix(TMP_Text text)
+            {
+                if (!Main.Enabled || Main.Settings == null) return;
+                if (!Main.Settings.ClassicMode) return;
+                if (Loc.CurrentLanguage != SystemLanguage.ChineseSimplified && RDString.language != SystemLanguage.ChineseSimplified) return;
+
+                if (IsLevelEditor() || IsEditorObject(text != null ? text.gameObject : null))
+                {
+                    if (RDConstants.data != null && RDConstants.data.chineseFontTMPro != null && text != null)
+                    {
+                        text.font = RDConstants.data.chineseFontTMPro;
+                        if (RDConstants.data.chineseFontTMPro.material != null)
+                        {
+                            text.fontSharedMaterial = RDConstants.data.chineseFontTMPro.material;
+                        }
+                    }
+                    return;
+                }
+
+                TMP_FontAsset cft = GetOrCreateClassicFontTMP();
+                if (cft != null && text != null)
+                {
+                    text.font = cft;
+                    if (cft.material != null)
+                    {
+                        text.fontSharedMaterial = cft.material;
+                    }
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(scnEditor), "Awake")]
+        public static class Patch_ScnEditor_Awake
+        {
+            public static void Postfix()
+            {
+                if (Main.Enabled && Main.Settings != null && Main.Settings.ClassicMode)
+                {
+                    try
+                    {
+                        if (RDConstants.data != null)
+                        {
+                            FontData fd = RDString.GetFontDataForLanguage(RDString.language);
+                            if (RDStringFontDataField != null)
+                            {
+                                RDStringFontDataField.SetValue(null, fd);
+                            }
+                        }
+                    }
+                    catch {}
                 }
             }
         }

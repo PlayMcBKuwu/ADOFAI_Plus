@@ -35,6 +35,9 @@ Write-Host "Compiling ADOFAIPlus.dll..." -ForegroundColor Cyan
 
 if ($LASTEXITCODE -eq 0) {
     Copy-Item -Path "$modDir\Info.json" -Destination "$binDir\Info.json" -Force
+    if (Test-Path "$modDir\Fonts") {
+        Copy-Item -Path "$modDir\Fonts" -Destination "$binDir" -Recurse -Force
+    }
     Write-Host "Build Successful! Output: $outputDll" -ForegroundColor Green
 
     $modsRoot = "C:\Program Files (x86)\Steam\steamapps\common\A Dance of Fire and Ice\Mods"
@@ -51,6 +54,9 @@ if ($LASTEXITCODE -eq 0) {
         }
         Copy-Item -Path "$outputDll" -Destination "$gameModsDir\ADOFAIPlus.dll" -Force
         Copy-Item -Path "$modDir\Info.json" -Destination "$gameModsDir\Info.json" -Force
+        if (Test-Path "$modDir\Fonts") {
+            Copy-Item -Path "$modDir\Fonts" -Destination "$gameModsDir" -Recurse -Force
+        }
         Write-Host "Automatically deployed to: $gameModsDir" -ForegroundColor Green
     }
 } else {
