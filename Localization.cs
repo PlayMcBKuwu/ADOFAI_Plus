@@ -299,7 +299,6 @@ namespace ADOFAIPlus
             Add(l, "ui.guide.results", "结算详细结果 (Detailed Results)：");
             Add(l, "ui.guide.results_desc", "太快/太慢保持原生总计数，下方显示：标判: X     宽判: Y");
 
-            Add(l, "ui.force_diff.toggle", "强制启用判定选择栏：在低 BPM（<220）及官方关卡中也强制解锁难度切换（可自由选择 宽松/标准/严格）");
             Add(l, "ui.section3", "3. 全局高级辅助功能 (Universal Cheats)");
             Add(l, "ui.nofail.toggle", "开启「不死模式」(No Fail) —— 官谱、BOSS关等任何情况均免死 (快捷键: Alt + N)");
             Add(l, "ui.auto.toggle", "开启「自动播放」(Autoplay) —— 官谱、任何关卡均开启自动纯完美 (快捷键: Alt + A)");
@@ -420,7 +419,6 @@ namespace ADOFAIPlus
             Add(l, "ui.guide.results", "結算詳細結果 (Detailed Results)：");
             Add(l, "ui.guide.results_desc", "太快/太慢保持原生總計數，下方顯示：標判: X     寬判: Y");
 
-            Add(l, "ui.force_diff.toggle", "強制啟用判定選擇欄：在低 BPM（<220）及官方關卡中也強制解鎖難度切換（可自由選擇 寬鬆/標準/嚴格）");
             Add(l, "ui.section3", "3. 全域進階輔助功能 (Universal Cheats)");
             Add(l, "ui.nofail.toggle", "開啟「不死模式」(No Fail) —— 官譜、BOSS關等任何情況均免死 (快捷鍵: Alt + N)");
             Add(l, "ui.auto.toggle", "開啟「自動播放」(Autoplay) —— 官譜、任何關卡均開啟自動純完美 (快捷鍵: Alt + A)");
@@ -541,7 +539,6 @@ namespace ADOFAIPlus
             Add(l, "ui.guide.results", "Detailed Results:");
             Add(l, "ui.guide.results_desc", "Early/Late retain total Counted hits; displays \"Normal: X     Lenient: Y\" below");
 
-            Add(l, "ui.force_diff.toggle", "Force Difficulty Selector: Unlock difficulty selection in low BPM (<220) and official levels");
             Add(l, "ui.section3", "3. Universal Cheats & Assists");
             Add(l, "ui.nofail.toggle", "Enable \"No Fail\": Invulnerable in official levels & boss stages (Hotkey: Alt + N)");
             Add(l, "ui.auto.toggle", "Enable \"Autoplay\": Auto pure perfect on all levels (Hotkey: Alt + A)");
@@ -654,7 +651,6 @@ namespace ADOFAIPlus
             Add(l, "ui.guide.results", "결과 상세 통계 (Detailed Results):");
             Add(l, "ui.guide.results_desc", "원작 빠름/느림 총합 유지, 아래에 보통: X     완화: Y 별도 표시");
 
-            Add(l, "ui.force_diff.toggle", "난이도 선택창 강제 표시: 저 BPM 및 공식 레벨에서도 난이도 선택 잠금 해제");
             Add(l, "ui.section3", "3. 범용 보조 및 치트 기능 (Universal Cheats)");
             Add(l, "ui.nofail.toggle", "「노페일 모드」(No Fail) 활성화: 공식 레벨, 보스전 등에서 사망 방지 (단축키: Alt + N)");
             Add(l, "ui.auto.toggle", "「자동 재생」(Autoplay) 활성화: 모든 레벨에서 자동 순수 완벽 연주 (단축키: Alt + A)");
@@ -767,7 +763,6 @@ namespace ADOFAIPlus
             Add(l, "ui.guide.results", "詳細リザルト統計 (Detailed Results):");
             Add(l, "ui.guide.results_desc", "早すぎ/遅すぎの総数を維持し、下に「通常: X     優しい: Y」を追加表示");
 
-            Add(l, "ui.force_diff.toggle", "難易度選択バーを強制表示: 低BPMや公式ステージでも難易度変更をロック解除");
             Add(l, "ui.section3", "3. ユニバーサルアシスト機能 (Universal Cheats)");
             Add(l, "ui.nofail.toggle", "「ノーフェイル」(No Fail) を有効化: 公式面やボス面でも無敵 (ショートカット: Alt + N)");
             Add(l, "ui.auto.toggle", "「オートプレイ」(Autoplay) を有効化: 全ステージで自動ピュアパーフェクト (ショートカット: Alt + A)");
@@ -874,7 +869,6 @@ namespace ADOFAIPlus
             Add(l, "ui.guide.results", "Resultados Detallados:");
             Add(l, "ui.guide.results_desc", "Mantiene total de aciertos; añade abajo Normal: X     Tolerante: Y");
 
-            Add(l, "ui.force_diff.toggle", "Forzar selector de dificultad en bajo BPM y niveles oficiales");
             Add(l, "ui.section3", "3. Modificadores y Asistencias Universales");
             Add(l, "ui.nofail.toggle", "Activar \"No Fail\" (Modo Inmortal) (Atajo: Alt + N)");
             Add(l, "ui.auto.toggle", "Activar \"Autoplay\" (Reproducción Automática) (Atajo: Alt + A)");
@@ -981,7 +975,6 @@ namespace ADOFAIPlus
             Add(l, "ui.guide.results", "Подробные результаты:");
             Add(l, "ui.guide.results_desc", "Сохраняет общий счёт; ниже выводит Норма: X     Мягкий: Y");
 
-            Add(l, "ui.force_diff.toggle", "Принудительный выбор сложности на низком BPM и в официальных уровнях");
             Add(l, "ui.section3", "3. Универсальные читы и помощники");
             Add(l, "ui.nofail.toggle", "Включить «Бессмертие» (No Fail) (Горячая клавиша: Alt + N)");
             Add(l, "ui.auto.toggle", "Включить «Автоигру» (Autoplay) (Горячая клавиша: Alt + A)");
@@ -1047,7 +1040,6 @@ namespace ADOFAIPlus
             Add(l, "ui.alt_style_sign", "Vorzeichen-Indikator (Standard): -Normal! (Früh) / Normal!+ (Spät)");
             Add(l, "ui.alt_style_letter", "Buchstaben-Präfix: L-Früh! / N-Spät!");
             Add(l, "ui.double_indicator.toggle", "Indikator für Fehlschläge aktivieren (Normal!! / Nachsichtig!!)");
-            Add(l, "ui.force_diff.toggle", "Schwierigkeitsauswahl immer erzwingen");
             Add(l, "ui.nofail.toggle", "\"Kein Fehlschlag\" (No Fail) aktivieren (Hotkey: Alt + N)");
             Add(l, "ui.auto.toggle", "\"Autoplay\" aktivieren (Hotkey: Alt + A)");
         }
@@ -1112,7 +1104,6 @@ namespace ADOFAIPlus
             Add(l, "ui.alt_style_sign", "Indicateur de Signe (Défaut): -Normal! (Tôt) / Normal!+ (Tard)");
             Add(l, "ui.alt_style_letter", "Préfixe de Lettre: L-Tôt! / N-Tard!");
             Add(l, "ui.double_indicator.toggle", "Indicateur pour les échecs (Normal!! / Tolérant!!)");
-            Add(l, "ui.force_diff.toggle", "Forcer le sélecteur de difficulté");
             Add(l, "ui.nofail.toggle", "Activer \"No Fail\" (Invincible) (Raccourci: Alt + N)");
             Add(l, "ui.auto.toggle", "Activer \"Autoplay\" (Automatique) (Raccourci: Alt + A)");
         }
@@ -1177,7 +1168,6 @@ namespace ADOFAIPlus
             Add(l, "ui.alt_style_sign", "Indicador de Sinal (Padrão): -Normal! (Cedo) / Normal!+ (Tarde)");
             Add(l, "ui.alt_style_letter", "Prefixo de Letra: L-Cedo! / N-Tarde!");
             Add(l, "ui.double_indicator.toggle", "Indicador para erros/batidas duplas (Normal!! / Tolerante!!)");
-            Add(l, "ui.force_diff.toggle", "Forçar seletor de dificuldade em qualquer nível");
             Add(l, "ui.nofail.toggle", "Ativar \"No Fail\" (Modo Imortal) (Atalho: Alt + N)");
             Add(l, "ui.auto.toggle", "Ativar \"Autoplay\" (Reprodução Automática) (Atalho: Alt + A)");
         }
@@ -1242,7 +1232,6 @@ namespace ADOFAIPlus
             Add(l, "ui.alt_style_sign", "Wskaźnik znaku (Domyślny): -Normalny! (Wcześnie) / Normalny!+ (Późno)");
             Add(l, "ui.alt_style_letter", "Prefiks litery: L-Wcześnie! / N-Późno!");
             Add(l, "ui.double_indicator.toggle", "Wskaźnik dla błędów (Normalny!! / Łagodny!!)");
-            Add(l, "ui.force_diff.toggle", "Wymuś selektor trudności na każdym poziomie");
             Add(l, "ui.nofail.toggle", "Włącz \"No Fail\" (Nieśmiertelność) (Skrót: Alt + N)");
             Add(l, "ui.auto.toggle", "Włącz \"Autoplay\" (Automatyczna gra) (Skrót: Alt + A)");
         }
@@ -1307,7 +1296,6 @@ namespace ADOFAIPlus
             Add(l, "ui.alt_style_sign", "Chỉ báo Dấu (Mặc định): -Tiêu chuẩn! (Sớm) / Tiêu chuẩn!+ (Trễ)");
             Add(l, "ui.alt_style_letter", "Tiền tố Chữ cái: L-Sớm! / N-Trễ!");
             Add(l, "ui.double_indicator.toggle", "Chỉ báo cho lỗi/gõ trượt (Tiêu chuẩn!! / Nới lỏng!!)");
-            Add(l, "ui.force_diff.toggle", "Bắt buộc mở thanh chọn độ khó ở mọi màn");
             Add(l, "ui.nofail.toggle", "Bật \"Không chết\" (No Fail) (Phím tắt: Alt + N)");
             Add(l, "ui.auto.toggle", "Bật \"Tự chơi\" (Autoplay) (Phím tắt: Alt + A)");
         }
@@ -1372,7 +1360,6 @@ namespace ADOFAIPlus
             Add(l, "ui.alt_style_sign", "Indikátor Znaménka (Výchozí): -Normální! (Brzy) / Normální!+ (Pozdě)");
             Add(l, "ui.alt_style_letter", "Předpona Písmene: L-Brzy! / N-Pozdě!");
             Add(l, "ui.double_indicator.toggle", "Indikátor pro chyby/dvojité stisknutí (Normální!! / Mírný!!)");
-            Add(l, "ui.force_diff.toggle", "Vynutit volič obtížnosti na všech úrovních");
             Add(l, "ui.nofail.toggle", "Povolit \"No Fail\" (Nesmrtelnost) (Zkratka: Alt + N)");
             Add(l, "ui.auto.toggle", "Povolit \"Autoplay\" (Automatická hra) (Zkratka: Alt + A)");
         }
@@ -1437,7 +1424,6 @@ namespace ADOFAIPlus
             Add(l, "ui.alt_style_sign", "Indicator de Semn (Implicit): -Normal! (Devreme) / Normal!+ (Târziu)");
             Add(l, "ui.alt_style_letter", "Prefix de Literă: L-Devreme! / N-Târziu!");
             Add(l, "ui.double_indicator.toggle", "Indicator pentru ratări (Normal!! / Indulgent!!)");
-            Add(l, "ui.force_diff.toggle", "Forțează selectorul de dificultate pe orice nivel");
             Add(l, "ui.nofail.toggle", "Activează \"No Fail\" (Nemurire) (Comandă rapidă: Alt + N)");
             Add(l, "ui.auto.toggle", "Activează \"Autoplay\" (Joc automat) (Comandă rapidă: Alt + A)");
         }

@@ -93,11 +93,6 @@ namespace ADOFAIPlus
         public AlternativeIndicatorStyle AltStyle = AlternativeIndicatorStyle.SignPrefix;
 
         /// <summary>
-        /// 强制启用判定选择（即使在低 BPM 或官方关卡也强制开启原版严/标/宽判定选择栏）
-        /// </summary>
-        public bool ForceDifficultySelector = false;
-
-        /// <summary>
         /// 杂项：隐藏星球判定圈（虚线圆圈）
         /// </summary>
         public bool HidePlanetRing = false;

@@ -55,7 +55,6 @@ namespace ADOFAIPlus
                 PatchAllSafely();
                 try
                 {
-                    Patches.ApplyStateChange();
                     Patches.ApplyJapaneseFontPreference();
                     Patches.ApplyClassicFontPreference();
                     if (Settings.HidePlanetRing) Patches.ApplyHidePlanetRing(true);
@@ -279,16 +278,6 @@ namespace ADOFAIPlus
                 GUILayout.EndVertical();
             }
 
-            GUILayout.Space(10);
-            bool oldForce = Settings.ForceDifficultySelector;
-            bool newForce = GUILayout.Toggle(
-                oldForce,
-                " " + Loc.Get("ui.force_diff.toggle"));
-            if (newForce != oldForce)
-            {
-                Settings.ForceDifficultySelector = newForce;
-                Patches.ApplyStateChange();
-            }
             GUILayout.EndVertical();
 
             GUILayout.Space(5);
