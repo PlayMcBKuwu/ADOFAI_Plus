@@ -56,6 +56,7 @@ namespace ADOFAIPlus
                 try
                 {
                     Patches.ApplyJapaneseFontPreference();
+                    Patches.ApplyClassicFontPreference();
                     if (Settings.HidePlanetRing) Patches.ApplyHidePlanetRing(true);
                 }
                 catch (Exception ex)

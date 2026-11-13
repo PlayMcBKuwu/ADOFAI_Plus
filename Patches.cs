@@ -228,6 +228,7 @@ namespace ADOFAIPlus
         public static void RestoreOriginalState()
         {
             ApplyHidePlanetRing(false);
+            ApplyClassicFontPreference();
         }
 
         public static void ApplyJapaneseFontPreference()
@@ -305,10 +306,31 @@ namespace ADOFAIPlus
             }
         }
 
+        [System.Runtime.InteropServices.DllImport("gdi32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        private static extern int AddFontResourceExW(string lpszFilename, uint fl, IntPtr pdv);
+        private const uint FR_PRIVATE = 0x10;
+
         private static TMP_FontAsset cachedClassicFontTMP = null;
         private static Font cachedClassicBaseFont = null;
+        private static Font cachedClassicUIFont = null;
         private static Material cachedClassicBorderMaterial = null;
         private static bool fontLoadAttempted = false;
+        private static bool uiFontLoadAttempted = false;
+        private static bool gdiFontRegistered = false;
+
+        private static readonly Dictionary<int, Font> OriginalUIFonts = new Dictionary<int, Font>();
+        private static readonly Dictionary<int, Font> OriginalTextMeshFonts = new Dictionary<int, Font>();
+        private static readonly Dictionary<int, TMP_FontAsset> OriginalTMPFonts = new Dictionary<int, TMP_FontAsset>();
+        private static readonly Dictionary<int, Material> OriginalTMPMaterials = new Dictionary<int, Material>();
+
+        public static bool IsClassicFontActive()
+        {
+            return Main.Enabled &&
+                   Main.Settings != null &&
+                   Main.Settings.ClassicMode &&
+                   (Loc.CurrentLanguage == SystemLanguage.ChineseSimplified || RDString.language == SystemLanguage.ChineseSimplified);
+        }
+
 
         public static bool IsLevelEditor()
         {
@@ -411,9 +433,110 @@ namespace ADOFAIPlus
             return cachedClassicBorderMaterial;
         }
 
+        private static void EnsureGdiFontRegistered(string fontPath)
+        {
+            if (gdiFontRegistered || string.IsNullOrEmpty(fontPath)) return;
+            gdiFontRegistered = true;
+            try
+            {
+                int added = AddFontResourceExW(fontPath, FR_PRIVATE, IntPtr.Zero);
+                if (Main.Logger != null)
+                {
+                    Main.Logger.Log("[ClassicFont] AddFontResourceExW(" + fontPath + ") added=" + added);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Main.Logger != null) Main.Logger.Log("[ClassicFont] AddFontResourceExW skipped: " + ex.Message);
+            }
+        }
+
+        public static Font GetOrCreateClassicUIFont()
+        {
+            if (cachedClassicUIFont != null) return cachedClassicUIFont;
+            if (RDConstants.data == null) return null;
+            if (uiFontLoadAttempted && cachedClassicUIFont == null) return null;
+
+            try
+            {
+                string fontPath = GetModFontPath();
+                if (string.IsNullOrEmpty(fontPath))
+                {
+                    uiFontLoadAttempted = true;
+                    return null;
+                }
+
+                EnsureGdiFontRegistered(fontPath);
+
+                int uiSize = (RDConstants.data.chineseFont != null && RDConstants.data.chineseFont.fontSize > 0)
+                    ? RDConstants.data.chineseFont.fontSize
+                    : 16;
+
+                // 1. Verify OS dynamic font resolves ZCOOL KuaiLe (registered via FR_PRIVATE)
+                bool osFontOk = false;
+                Font probeFont = null;
+                try
+                {
+                    probeFont = Font.CreateDynamicFontFromOSFont(
+                        new string[] { "ZCOOL KuaiLe", "站酷快乐体 开源版" },
+                        uiSize);
+                    if (probeFont != null)
+                    {
+                        probeFont.RequestCharactersInTexture("快乐经Aa0", uiSize);
+                        CharacterInfo ci;
+                        if (probeFont.GetCharacterInfo('乐', out ci, uiSize) && ci.advance > 0)
+                        {
+                            osFontOk = true;
+                        }
+                    }
+                }
+                catch {}
+
+                if (probeFont != null)
+                {
+                    try { UnityEngine.Object.Destroy(probeFont); } catch {}
+                }
+
+                if (osFontOk)
+                {
+                    cachedClassicUIFont = Font.CreateDynamicFontFromOSFont(
+                        new string[] { "ZCOOL KuaiLe", "站酷快乐体 开源版", "Microsoft YaHei", "Arial" },
+                        uiSize);
+                    if (cachedClassicUIFont != null)
+                    {
+                        cachedClassicUIFont.name = "ClassicFontUI";
+                        UnityEngine.Object.DontDestroyOnLoad(cachedClassicUIFont);
+                        if (Main.Logger != null) Main.Logger.Log("[ClassicFont] UI Font initialized via CreateDynamicFontFromOSFont (ZCOOL KuaiLe)");
+                    }
+                }
+
+                if (cachedClassicUIFont == null)
+                {
+                    if (cachedClassicBaseFont == null)
+                    {
+                        cachedClassicBaseFont = new Font(fontPath);
+                        cachedClassicBaseFont.name = "ClassicFont";
+                        UnityEngine.Object.DontDestroyOnLoad(cachedClassicBaseFont);
+                    }
+                    cachedClassicUIFont = cachedClassicBaseFont;
+                    if (Main.Logger != null) Main.Logger.Log("[ClassicFont] UI Font falling back to new Font(fontPath)");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Main.Logger != null) Main.Logger.Error("[ClassicFont] Failed to initialize UI Font: " + ex);
+            }
+            finally
+            {
+                uiFontLoadAttempted = true;
+            }
+            return cachedClassicUIFont;
+        }
+
         public static TMP_FontAsset GetOrCreateClassicFontTMP()
         {
             if (cachedClassicFontTMP != null) return cachedClassicFontTMP;
+            if (RDConstants.data == null) return null;
             if (fontLoadAttempted && cachedClassicFontTMP == null) return null;
 
             try
@@ -426,16 +549,21 @@ namespace ADOFAIPlus
                     return null;
                 }
 
+                EnsureGdiFontRegistered(fontPath);
+
                 // 1. Instantiate base Font (handles non-ASCII filepaths via Unity wide-char IO)
-                try
+                if (cachedClassicBaseFont == null)
                 {
-                    cachedClassicBaseFont = new Font(fontPath);
-                    cachedClassicBaseFont.name = "ClassicFont";
-                    UnityEngine.Object.DontDestroyOnLoad(cachedClassicBaseFont);
-                }
-                catch (Exception ex)
-                {
-                    if (Main.Logger != null) Main.Logger.Log("[ClassicFont] Failed to create base Font: " + ex.Message);
+                    try
+                    {
+                        cachedClassicBaseFont = new Font(fontPath);
+                        cachedClassicBaseFont.name = "ClassicFont";
+                        UnityEngine.Object.DontDestroyOnLoad(cachedClassicBaseFont);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (Main.Logger != null) Main.Logger.Log("[ClassicFont] Failed to create base Font: " + ex.Message);
+                    }
                 }
 
                 // 2. Create TMP_FontAsset with pointSize = 36 to match vanilla chineseFontTMPro exactly
@@ -515,6 +643,22 @@ namespace ADOFAIPlus
                         Main.Logger.Log("[ClassicFont] Pre-populate core characters: " + prePop + ", glyphCount=" + cachedClassicFontTMP.characterTable.Count);
                     }
 
+                    // Register in MaterialReferenceManager so <font="..."> rich text tags resolve
+                    try
+                    {
+                        MethodInfo addFontMethod = typeof(MaterialReferenceManager).GetMethod(
+                            "AddFontAsset",
+                            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static,
+                            null,
+                            new Type[] { typeof(TMP_FontAsset) },
+                            null);
+                        if (addFontMethod != null)
+                        {
+                            addFontMethod.Invoke(null, new object[] { cachedClassicFontTMP });
+                        }
+                    }
+                    catch {}
+
                     // Fallback font asset table
                     if (cachedClassicFontTMP.fallbackFontAssetTable == null)
                     {
@@ -532,7 +676,8 @@ namespace ADOFAIPlus
                         }
                     }
 
-                    // Initialize classic border material
+                    // Warm up UI font and classic border material
+                    GetOrCreateClassicUIFont();
                     GetOrCreateClassicBorderMaterial();
 
                     if (Main.Logger != null) Main.Logger.Log("[ClassicFont] Successfully initialized dynamic TMP_FontAsset for 站酷快乐体 开源版");
@@ -549,16 +694,301 @@ namespace ADOFAIPlus
             return cachedClassicFontTMP;
         }
 
+        private static bool IsCustomDecorationFont(GameObject go, Font font)
+        {
+            if (go == null || font == null || RDConstants.data == null) return false;
+            if (go.GetComponent<scrTextDecoration>() == null) return false;
+            return font == RDConstants.data.arialFont ||
+                   font == RDConstants.data.comicSansMSFont ||
+                   font == RDConstants.data.courierNewFont ||
+                   font == RDConstants.data.georgiaFont ||
+                   font == RDConstants.data.impactFont ||
+                   font == RDConstants.data.timesNewRomanFont;
+        }
+
+        private static bool ShouldSkipTMPFontReplacement(TMP_FontAsset fontAsset)
+        {
+            if (fontAsset == null) return true;
+            if (cachedClassicFontTMP != null && fontAsset == cachedClassicFontTMP) return true;
+            if (RDConstants.data != null &&
+                (fontAsset == RDConstants.data.chineseFontTMPro ||
+                 fontAsset == RDConstants.data.chineseFontTMProDuplicate ||
+                 fontAsset == RDConstants.data.latinFontTMPro ||
+                 fontAsset == RDConstants.data.japaneseFontTMPro ||
+                 fontAsset == RDConstants.data.koreanFontTMPro))
+            {
+                return false;
+            }
+
+            string name = fontAsset.name;
+            if (!string.IsNullOrEmpty(name))
+            {
+                if (name.IndexOf("Icon", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    name.IndexOf("Glyph", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    name.IndexOf("Rewired", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    name.IndexOf("Symbol", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    name.IndexOf("Sprite", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    name.IndexOf("Emoji", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static void ApplyClassicFontToText(Text t, bool useClassic, Font cf)
+        {
+            if (t == null || IsEditorObject(t.gameObject)) return;
+            int id = t.GetInstanceID();
+            if (useClassic)
+            {
+                if (cf == null || t.font == cf) return;
+                if (IsCustomDecorationFont(t.gameObject, t.font)) return;
+                if (!OriginalUIFonts.ContainsKey(id))
+                {
+                    OriginalUIFonts[id] = t.font;
+                }
+                t.font = cf;
+            }
+            else
+            {
+                Font orig;
+                if (OriginalUIFonts.TryGetValue(id, out orig) && orig != null)
+                {
+                    if (t.font != orig) t.font = orig;
+                }
+                else if (cf != null && t.font == cf && RDConstants.data != null && RDConstants.data.chineseFont != null)
+                {
+                    t.font = RDConstants.data.chineseFont;
+                }
+            }
+        }
+
+        public static void ApplyClassicFontToTextMesh(TextMesh tm, bool useClassic, Font cf)
+        {
+            if (tm == null || IsEditorObject(tm.gameObject)) return;
+            int id = tm.GetInstanceID();
+            if (useClassic)
+            {
+                if (cf == null || tm.font == cf) return;
+                if (IsCustomDecorationFont(tm.gameObject, tm.font)) return;
+                if (!OriginalTextMeshFonts.ContainsKey(id))
+                {
+                    OriginalTextMeshFonts[id] = tm.font;
+                }
+                tm.font = cf;
+                Renderer r = tm.GetComponent<Renderer>();
+                if (r != null && cf.material != null) r.sharedMaterial = cf.material;
+            }
+            else
+            {
+                Font orig;
+                if (OriginalTextMeshFonts.TryGetValue(id, out orig) && orig != null)
+                {
+                    if (tm.font != orig)
+                    {
+                        tm.font = orig;
+                        Renderer r = tm.GetComponent<Renderer>();
+                        if (r != null && orig.material != null) r.sharedMaterial = orig.material;
+                    }
+                }
+                else if (cf != null && tm.font == cf && RDConstants.data != null && RDConstants.data.chineseFont != null)
+                {
+                    tm.font = RDConstants.data.chineseFont;
+                    Renderer r = tm.GetComponent<Renderer>();
+                    if (r != null && RDConstants.data.chineseFont.material != null) r.sharedMaterial = RDConstants.data.chineseFont.material;
+                }
+            }
+        }
+
+        public static void ApplyClassicFontToTMP(TMP_Text tmp, bool useClassic, TMP_FontAsset cft, Material borderMat)
+        {
+            if (tmp == null || IsEditorObject(tmp.gameObject)) return;
+            int id = tmp.GetInstanceID();
+
+            scrHitTextMesh hitParent = tmp.GetComponentInParent<scrHitTextMesh>();
+            bool isXPerfectBorder = (hitParent != null && hitParent.xPerfectBorder == tmp) ||
+                                    string.Equals(tmp.name, "xPerfectBorder", StringComparison.Ordinal);
+
+            if (isXPerfectBorder)
+            {
+                if (useClassic)
+                {
+                    if (!OriginalTMPFonts.ContainsKey(id)) OriginalTMPFonts[id] = tmp.font;
+                    if (!OriginalTMPMaterials.ContainsKey(id)) OriginalTMPMaterials[id] = tmp.fontSharedMaterial;
+                    if (cft != null && tmp.font != cft) tmp.font = cft;
+                    if (borderMat != null && tmp.fontSharedMaterial != borderMat) tmp.fontSharedMaterial = borderMat;
+                }
+                else
+                {
+                    TMP_FontAsset origF;
+                    if (OriginalTMPFonts.TryGetValue(id, out origF) && origF != null && tmp.font != origF)
+                    {
+                        tmp.font = origF;
+                    }
+                    else if (cft != null && tmp.font == cft && RDConstants.data != null && RDConstants.data.chineseFontTMPro != null)
+                    {
+                        tmp.font = RDConstants.data.chineseFontTMPro;
+                    }
+
+                    Material origM;
+                    if (OriginalTMPMaterials.TryGetValue(id, out origM) && origM != null && tmp.fontSharedMaterial != origM)
+                    {
+                        tmp.fontSharedMaterial = origM;
+                    }
+                    else if (RDConstants.data != null && RDConstants.data.chineseFontTMProXPerfectBorderMaterial != null && tmp.font == RDConstants.data.chineseFontTMPro)
+                    {
+                        tmp.fontSharedMaterial = RDConstants.data.chineseFontTMProXPerfectBorderMaterial;
+                    }
+                }
+                return;
+            }
+
+            if (useClassic)
+            {
+                if (cft == null || tmp.font == cft) return;
+                if (ShouldSkipTMPFontReplacement(tmp.font)) return;
+
+                if (!OriginalTMPFonts.ContainsKey(id)) OriginalTMPFonts[id] = tmp.font;
+                if (!OriginalTMPMaterials.ContainsKey(id)) OriginalTMPMaterials[id] = tmp.fontSharedMaterial;
+
+                Material prevMat = tmp.fontSharedMaterial;
+                bool copyUnderlay = false;
+                Color underlayCol = Color.black;
+                float underlayDilate = 0f;
+                bool copyOutline = false;
+                Color outlineCol = Color.black;
+                float outlineWidth = 0f;
+
+                if (prevMat != null)
+                {
+                    try
+                    {
+                        if (prevMat.HasProperty(ShaderUtilities.ID_UnderlayColor) && prevMat.HasProperty(ShaderUtilities.ID_UnderlayDilate))
+                        {
+                            underlayCol = prevMat.GetColor(ShaderUtilities.ID_UnderlayColor);
+                            underlayDilate = prevMat.GetFloat(ShaderUtilities.ID_UnderlayDilate);
+                            if (underlayDilate != 0f || underlayCol.a > 0f) copyUnderlay = true;
+                        }
+                        if (prevMat.HasProperty(ShaderUtilities.ID_OutlineWidth) && prevMat.HasProperty(ShaderUtilities.ID_OutlineColor))
+                        {
+                            outlineWidth = prevMat.GetFloat(ShaderUtilities.ID_OutlineWidth);
+                            outlineCol = prevMat.GetColor(ShaderUtilities.ID_OutlineColor);
+                            if (outlineWidth > 0f) copyOutline = true;
+                        }
+                    }
+                    catch {}
+                }
+
+                tmp.font = cft;
+
+                if (copyUnderlay || copyOutline)
+                {
+                    try
+                    {
+                        Material newMat = tmp.fontMaterial;
+                        if (newMat != null)
+                        {
+                            if (copyUnderlay)
+                            {
+                                if (newMat.HasProperty(ShaderUtilities.ID_UnderlayColor))
+                                    newMat.SetColor(ShaderUtilities.ID_UnderlayColor, underlayCol);
+                                if (newMat.HasProperty(ShaderUtilities.ID_UnderlayDilate))
+                                    newMat.SetFloat(ShaderUtilities.ID_UnderlayDilate, underlayDilate);
+                            }
+                            if (copyOutline)
+                            {
+                                if (newMat.HasProperty(ShaderUtilities.ID_OutlineWidth))
+                                    newMat.SetFloat(ShaderUtilities.ID_OutlineWidth, outlineWidth);
+                                if (newMat.HasProperty(ShaderUtilities.ID_OutlineColor))
+                                    newMat.SetColor(ShaderUtilities.ID_OutlineColor, outlineCol);
+                            }
+                        }
+                    }
+                    catch {}
+                }
+            }
+            else
+            {
+                TMP_FontAsset origF;
+                if (OriginalTMPFonts.TryGetValue(id, out origF) && origF != null)
+                {
+                    if (tmp.font != origF) tmp.font = origF;
+                }
+                else if (cft != null && tmp.font == cft && RDConstants.data != null && RDConstants.data.chineseFontTMPro != null)
+                {
+                    tmp.font = RDConstants.data.chineseFontTMPro;
+                }
+
+                Material origM;
+                if (OriginalTMPMaterials.TryGetValue(id, out origM) && origM != null && tmp.fontSharedMaterial != origM)
+                {
+                    tmp.fontSharedMaterial = origM;
+                }
+            }
+        }
+
+        public static void ApplyClassicFontToHierarchy(GameObject root, bool useClassic, Font cf, TMP_FontAsset cft, Material borderMat)
+        {
+            if (root == null || IsEditorObject(root)) return;
+            Text[] texts = root.GetComponentsInChildren<Text>(true);
+            if (texts != null)
+            {
+                for (int i = 0; i < texts.Length; i++)
+                    ApplyClassicFontToText(texts[i], useClassic, cf);
+            }
+            TMP_Text[] tmps = root.GetComponentsInChildren<TMP_Text>(true);
+            if (tmps != null)
+            {
+                for (int i = 0; i < tmps.Length; i++)
+                    ApplyClassicFontToTMP(tmps[i], useClassic, cft, borderMat);
+            }
+            TextMesh[] meshes = root.GetComponentsInChildren<TextMesh>(true);
+            if (meshes != null)
+            {
+                for (int i = 0; i < meshes.Length; i++)
+                    ApplyClassicFontToTextMesh(meshes[i], useClassic, cf);
+            }
+        }
+
+        private static void SyncFontFallbackTable(TMP_FontAsset hostFont, bool useClassic, TMP_FontAsset cft)
+        {
+            if (hostFont == null || cft == null || hostFont == cft) return;
+            if (hostFont.fallbackFontAssetTable == null)
+            {
+                if (!useClassic) return;
+                hostFont.fallbackFontAssetTable = new List<TMP_FontAsset>();
+            }
+            if (useClassic)
+            {
+                hostFont.fallbackFontAssetTable.Remove(cft);
+                hostFont.fallbackFontAssetTable.Insert(0, cft);
+            }
+            else
+            {
+                hostFont.fallbackFontAssetTable.Remove(cft);
+            }
+        }
+
         public static void ApplyClassicFontPreference()
         {
             try
             {
                 if (RDConstants.data == null)
                     return;
-                if (Loc.CurrentLanguage != SystemLanguage.ChineseSimplified && RDString.language != SystemLanguage.ChineseSimplified)
-                    return;
 
-                bool useClassic = Main.Enabled && Main.Settings != null && Main.Settings.ClassicMode && !IsLevelEditor();
+                bool isSimplifiedChinese = (Loc.CurrentLanguage == SystemLanguage.ChineseSimplified || RDString.language == SystemLanguage.ChineseSimplified);
+                bool useClassic = isSimplifiedChinese && IsClassicFontActive() && !IsLevelEditor();
+
+                if (!isSimplifiedChinese && !useClassic)
+                {
+                    // Restore any modified components if language switched away from Simplified Chinese
+                    if (OriginalUIFonts.Count == 0 && OriginalTMPFonts.Count == 0 && OriginalTextMeshFonts.Count == 0)
+                        return;
+                }
+
+                Font targetUIFont = useClassic ? GetOrCreateClassicUIFont() : RDConstants.data.chineseFont;
+                if (targetUIFont == null) targetUIFont = RDConstants.data.chineseFont;
 
                 TMP_FontAsset targetFontTMP = useClassic ? GetOrCreateClassicFontTMP() : RDConstants.data.chineseFontTMPro;
                 if (targetFontTMP == null) targetFontTMP = RDConstants.data.chineseFontTMPro;
@@ -566,40 +996,55 @@ namespace ADOFAIPlus
                 Material targetBorderMat = useClassic ? GetOrCreateClassicBorderMaterial() : RDConstants.data.chineseFontTMProXPerfectBorderMaterial;
                 if (targetBorderMat == null) targetBorderMat = RDConstants.data.chineseFontTMProXPerfectBorderMaterial;
 
-                FontData fd = RDString.GetFontDataForLanguage(SystemLanguage.ChineseSimplified);
-                if (targetFontTMP != null)
+                if (isSimplifiedChinese)
                 {
-                    fd.fontTMP = targetFontTMP;
-                    fd.fontScale = 1.0f;
-                    fd.lineSpacingTMP = 1.0f;
-                }
-                if (RDStringFontDataField != null)
-                {
-                    RDStringFontDataField.SetValue(null, fd);
+                    FontData fd = RDString.GetFontDataForLanguage(SystemLanguage.ChineseSimplified);
+                    if (targetUIFont != null)
+                    {
+                        fd.font = targetUIFont;
+                        fd.lineSpacing = 1.0f;
+                    }
+                    if (targetFontTMP != null)
+                    {
+                        fd.fontTMP = targetFontTMP;
+                        fd.fontScale = 1.0f;
+                        fd.lineSpacingTMP = 1.0f;
+                    }
+                    if (RDStringFontDataField != null)
+                    {
+                        RDStringFontDataField.SetValue(null, fd);
+                    }
                 }
 
-                scrHitTextMesh[] hitMeshes = UnityEngine.Object.FindObjectsOfType<scrHitTextMesh>(true);
-                if (hitMeshes != null && targetFontTMP != null)
+                if (cachedClassicFontTMP != null)
                 {
-                    for (int i = 0; i < hitMeshes.Length; i++)
-                    {
-                        scrHitTextMesh m = hitMeshes[i];
-                        if (m != null && !IsEditorObject(m.gameObject))
-                        {
-                            if (m.text != null)
-                            {
-                                m.text.font = targetFontTMP;
-                            }
-                            if (m.xPerfectBorder != null)
-                            {
-                                m.xPerfectBorder.font = targetFontTMP;
-                                if (targetBorderMat != null)
-                                {
-                                    m.xPerfectBorder.fontMaterial = targetBorderMat;
-                                }
-                            }
-                        }
-                    }
+                    SyncFontFallbackTable(RDConstants.data.latinFontTMPro, useClassic, cachedClassicFontTMP);
+                    SyncFontFallbackTable(RDConstants.data.chineseFontTMPro, useClassic, cachedClassicFontTMP);
+                    SyncFontFallbackTable(RDConstants.data.chineseFontTMProDuplicate, useClassic, cachedClassicFontTMP);
+                }
+
+                Font cfForSweep = useClassic ? targetUIFont : cachedClassicUIFont;
+                TMP_FontAsset cftForSweep = useClassic ? targetFontTMP : cachedClassicFontTMP;
+
+                Text[] texts = UnityEngine.Object.FindObjectsOfType<Text>(true);
+                if (texts != null)
+                {
+                    for (int i = 0; i < texts.Length; i++)
+                        ApplyClassicFontToText(texts[i], useClassic, cfForSweep);
+                }
+
+                TMP_Text[] tmps = UnityEngine.Object.FindObjectsOfType<TMP_Text>(true);
+                if (tmps != null)
+                {
+                    for (int i = 0; i < tmps.Length; i++)
+                        ApplyClassicFontToTMP(tmps[i], useClassic, cftForSweep, targetBorderMat);
+                }
+
+                TextMesh[] meshes = UnityEngine.Object.FindObjectsOfType<TextMesh>(true);
+                if (meshes != null)
+                {
+                    for (int i = 0; i < meshes.Length; i++)
+                        ApplyClassicFontToTextMesh(meshes[i], useClassic, cfForSweep);
                 }
             }
             catch (Exception ex)
@@ -616,6 +1061,7 @@ namespace ADOFAIPlus
                 {
                     if (IsLevelEditor())
                     {
+                        ApplyClassicFontPreference();
                         if (RDConstants.data != null)
                         {
                             FontData fd = RDString.GetFontDataForLanguage(RDString.language);
@@ -1164,22 +1610,23 @@ namespace ADOFAIPlus
         {
             public static void Postfix(ref FontData __result)
             {
-                if (Main.Enabled &&
-                    Main.Settings != null &&
-                    Main.Settings.ClassicMode &&
-                    (Loc.CurrentLanguage == SystemLanguage.ChineseSimplified || RDString.language == SystemLanguage.ChineseSimplified))
+                if (IsClassicFontActive())
                 {
                     if (IsLevelEditor())
                     {
-                        if (RDConstants.data != null && RDConstants.data.chineseFontTMPro != null)
+                        if (RDConstants.data != null)
                         {
-                            __result.fontTMP = RDConstants.data.chineseFontTMPro;
+                            if (RDConstants.data.chineseFont != null) __result.font = RDConstants.data.chineseFont;
+                            if (RDConstants.data.chineseFontTMPro != null) __result.fontTMP = RDConstants.data.chineseFontTMPro;
                         }
                     }
                     else
                     {
+                        Font cf = GetOrCreateClassicUIFont();
+                        if (cf != null) { __result.font = cf; __result.lineSpacing = 1.0f; }
                         TMP_FontAsset cft = GetOrCreateClassicFontTMP();
-                        if (cft != null) __result.fontTMP = cft;
+                        if (cft != null) { __result.fontTMP = cft; __result.lineSpacingTMP = 1.0f; }
+                        __result.fontScale = 1.0f;
                     }
                 }
             }
@@ -1202,14 +1649,15 @@ namespace ADOFAIPlus
 
             public static void Postfix(SystemLanguage language, ref FontData __result)
             {
-                if (Main.Enabled &&
-                    Main.Settings != null &&
-                    Main.Settings.ClassicMode &&
+                if (IsClassicFontActive() &&
                     language == SystemLanguage.ChineseSimplified &&
                     !IsLevelEditor())
                 {
+                    Font cf = GetOrCreateClassicUIFont();
+                    if (cf != null) { __result.font = cf; __result.lineSpacing = 1.0f; }
                     TMP_FontAsset cft = GetOrCreateClassicFontTMP();
-                    if (cft != null) __result.fontTMP = cft;
+                    if (cft != null) { __result.fontTMP = cft; __result.lineSpacingTMP = 1.0f; }
+                    __result.fontScale = 1.0f;
                 }
             }
         }
@@ -1229,6 +1677,16 @@ namespace ADOFAIPlus
                     __result == RDConstants.data.japaneseFont)
                 {
                     __result = RDConstants.data.chineseFont;
+                    return;
+                }
+
+                if (IsClassicFontActive() &&
+                    !IsLevelEditor() &&
+                    RDConstants.data != null &&
+                    (__result == RDConstants.data.chineseFont || __result == RDConstants.data.latinFont))
+                {
+                    Font cf = GetOrCreateClassicUIFont();
+                    if (cf != null) __result = cf;
                 }
             }
         }
@@ -1256,10 +1714,7 @@ namespace ADOFAIPlus
                     }
                 }
 
-                if (Main.Enabled &&
-                    Main.Settings != null &&
-                    Main.Settings.ClassicMode &&
-                    (Loc.CurrentLanguage == SystemLanguage.ChineseSimplified || RDString.language == SystemLanguage.ChineseSimplified) &&
+                if (IsClassicFontActive() &&
                     !IsLevelEditor() &&
                     !string.IsNullOrEmpty(__result) &&
                     RDConstants.data != null)
@@ -1268,23 +1723,195 @@ namespace ADOFAIPlus
                     if (cft != null)
                     {
                         string cftName = cft.name;
-                        if (RDConstants.data.chineseFont != null)
+                        string[] oldNames = new string[] {
+                            RDConstants.data.chineseFont != null ? RDConstants.data.chineseFont.name : null,
+                            RDConstants.data.chineseFontTMPro != null ? RDConstants.data.chineseFontTMPro.name : null,
+                            RDConstants.data.latinFont != null ? RDConstants.data.latinFont.name : null,
+                            RDConstants.data.latinFontTMPro != null ? RDConstants.data.latinFontTMPro.name : null
+                        };
+                        for (int i = 0; i < oldNames.Length; i++)
                         {
-                            string cnName = RDConstants.data.chineseFont.name;
-                            if (!string.IsNullOrEmpty(cnName) && __result.IndexOf(cnName) >= 0)
+                            string oldN = oldNames[i];
+                            if (!string.IsNullOrEmpty(oldN) && __result.IndexOf(oldN) >= 0)
                             {
-                                __result = __result.Replace("<font=\"" + cnName + "\">", "<font=\"" + cftName + "\">");
-                            }
-                        }
-                        if (RDConstants.data.chineseFontTMPro != null)
-                        {
-                            string cnTmpName = RDConstants.data.chineseFontTMPro.name;
-                            if (!string.IsNullOrEmpty(cnTmpName) && __result.IndexOf(cnTmpName) >= 0)
-                            {
-                                __result = __result.Replace("<font=\"" + cnTmpName + "\">", "<font=\"" + cftName + "\">");
+                                __result = __result.Replace("<font=\"" + oldN + "\">", "<font=\"" + cftName + "\">");
                             }
                         }
                     }
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(RDString), "SetLocalizedFont", new Type[] { typeof(Text) })]
+        public static class Patch_RDString_SetLocalizedFont_Text
+        {
+            public static void Postfix(Text text)
+            {
+                if (text == null || IsEditorObject(text.gameObject)) return;
+                if (IsClassicFontActive())
+                {
+                    Font cf = GetOrCreateClassicUIFont();
+                    if (cf != null) ApplyClassicFontToText(text, true, cf);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(RDString), "SetLocalizedFont", new Type[] { typeof(TMP_Text) })]
+        public static class Patch_RDString_SetLocalizedFont_TMP
+        {
+            public static void Postfix(TMP_Text text)
+            {
+                if (text == null || IsEditorObject(text.gameObject)) return;
+                if (IsClassicFontActive())
+                {
+                    TMP_FontAsset cft = GetOrCreateClassicFontTMP();
+                    Material bm = GetOrCreateClassicBorderMaterial();
+                    if (cft != null) ApplyClassicFontToTMP(text, true, cft, bm);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(RDString), "SetLocalizedFont", new Type[] { typeof(TextMesh) })]
+        public static class Patch_RDString_SetLocalizedFont_TextMesh
+        {
+            public static void Postfix(TextMesh text)
+            {
+                if (text == null || IsEditorObject(text.gameObject)) return;
+                if (IsClassicFontActive())
+                {
+                    Font cf = GetOrCreateClassicUIFont();
+                    if (cf != null) ApplyClassicFontToTextMesh(text, true, cf);
+                }
+            }
+        }
+
+        private static readonly FieldInfo DynamicallyOrderedSourceFontField =
+            typeof(ADOFAI.DynamicallyOrderedFont).GetField("sourceFont", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+        [HarmonyPatch(typeof(ADOFAI.DynamicallyOrderedFont), "ApplyForLanguage")]
+        public static class Patch_DynamicallyOrderedFont_ApplyForLanguage
+        {
+            public static void Postfix(ADOFAI.DynamicallyOrderedFont __instance, SystemLanguage language)
+            {
+                if (DynamicallyOrderedSourceFontField == null) return;
+                if (IsClassicFontActive() && language == SystemLanguage.ChineseSimplified && !IsLevelEditor())
+                {
+                    TMP_FontAsset sourceFont = DynamicallyOrderedSourceFontField.GetValue(__instance) as TMP_FontAsset;
+                    TMP_FontAsset cft = GetOrCreateClassicFontTMP();
+                    SyncFontFallbackTable(sourceFont, true, cft);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Text), "OnEnable")]
+        public static class Patch_Text_OnEnable
+        {
+            public static void Postfix(Text __instance)
+            {
+                if (__instance == null) return;
+                bool useClassic = IsClassicFontActive() && !IsLevelEditor();
+                if (useClassic)
+                {
+                    Font cf = GetOrCreateClassicUIFont();
+                    if (cf != null) ApplyClassicFontToText(__instance, true, cf);
+                }
+                else if (OriginalUIFonts.ContainsKey(__instance.GetInstanceID()))
+                {
+                    ApplyClassicFontToText(__instance, false, cachedClassicUIFont);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(TextMeshProUGUI), "OnEnable")]
+        public static class Patch_TMP_UGUI_OnEnable
+        {
+            public static void Postfix(TextMeshProUGUI __instance)
+            {
+                if (__instance == null) return;
+                bool useClassic = IsClassicFontActive() && !IsLevelEditor();
+                if (useClassic)
+                {
+                    TMP_FontAsset cft = GetOrCreateClassicFontTMP();
+                    Material bm = GetOrCreateClassicBorderMaterial();
+                    if (cft != null) ApplyClassicFontToTMP(__instance, true, cft, bm);
+                }
+                else if (OriginalTMPFonts.ContainsKey(__instance.GetInstanceID()))
+                {
+                    ApplyClassicFontToTMP(__instance, false, cachedClassicFontTMP,
+                        RDConstants.data != null ? RDConstants.data.chineseFontTMProXPerfectBorderMaterial : null);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(TextMeshPro), "OnEnable")]
+        public static class Patch_TMP_OnEnable
+        {
+            public static void Postfix(TextMeshPro __instance)
+            {
+                if (__instance == null) return;
+                bool useClassic = IsClassicFontActive() && !IsLevelEditor();
+                if (useClassic)
+                {
+                    TMP_FontAsset cft = GetOrCreateClassicFontTMP();
+                    Material bm = GetOrCreateClassicBorderMaterial();
+                    if (cft != null) ApplyClassicFontToTMP(__instance, true, cft, bm);
+                }
+                else if (OriginalTMPFonts.ContainsKey(__instance.GetInstanceID()))
+                {
+                    ApplyClassicFontToTMP(__instance, false, cachedClassicFontTMP,
+                        RDConstants.data != null ? RDConstants.data.chineseFontTMProXPerfectBorderMaterial : null);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(scrTextChanger), "Start")]
+        public static class Patch_ScrTextChanger_Start
+        {
+            public static void Postfix(scrTextChanger __instance)
+            {
+                if (__instance == null) return;
+                if (IsClassicFontActive() && !IsEditorObject(__instance.gameObject))
+                {
+                    ApplyClassicFontToHierarchy(__instance.gameObject, true, GetOrCreateClassicUIFont(), GetOrCreateClassicFontTMP(), GetOrCreateClassicBorderMaterial());
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(scrTextChangerMultiline), "Start")]
+        public static class Patch_ScrTextChangerMultiline_Start
+        {
+            public static void Postfix(scrTextChangerMultiline __instance)
+            {
+                if (__instance == null) return;
+                if (IsClassicFontActive() && !IsEditorObject(__instance.gameObject))
+                {
+                    ApplyClassicFontToHierarchy(__instance.gameObject, true, GetOrCreateClassicUIFont(), GetOrCreateClassicFontTMP(), GetOrCreateClassicBorderMaterial());
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(RDStringToUIText), "Start")]
+        public static class Patch_RDStringToUIText_Start
+        {
+            public static void Postfix(RDStringToUIText __instance)
+            {
+                if (__instance == null) return;
+                if (IsClassicFontActive() && !IsEditorObject(__instance.gameObject))
+                {
+                    ApplyClassicFontToHierarchy(__instance.gameObject, true, GetOrCreateClassicUIFont(), GetOrCreateClassicFontTMP(), GetOrCreateClassicBorderMaterial());
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(scnCLS), "DisplayLevel")]
+        public static class Patch_ScnCLS_DisplayLevel
+        {
+            public static void Postfix(scnCLS __instance)
+            {
+                if (__instance == null) return;
+                if (IsClassicFontActive() && !IsLevelEditor())
+                {
+                    ApplyClassicFontToHierarchy(__instance.gameObject, true, GetOrCreateClassicUIFont(), GetOrCreateClassicFontTMP(), GetOrCreateClassicBorderMaterial());
                 }
             }
         }
@@ -1298,6 +1925,7 @@ namespace ADOFAIPlus
                 {
                     try
                     {
+                        ApplyClassicFontPreference();
                         if (RDConstants.data != null)
                         {
                             FontData fd = RDString.GetFontDataForLanguage(RDString.language);
